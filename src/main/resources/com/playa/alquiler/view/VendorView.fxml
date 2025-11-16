@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.VendorController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
+    <top>
+        <HBox spacing="10" styleClass="top-bar">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+            <Label text="Panel de Vendedor" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="currentUserLabel"/>
+            <Button text="Cerrar sesión" onAction="#onLogout"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="10" styleClass="card">
+            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+            <Button text="Crear / Finalizar Alquiler" onAction="#abrirCrearAlquiler" maxWidth="250" styleClass="primary-btn"/>
+            <Separator/>
+            <GridPane hgap="8" vgap="8">
+                <Label text="Finalizar por ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="alquilerIdField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <Button text="Finalizar" onAction="#onFinalizarDirecto" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="secondary-btn"/>
+            </GridPane>
+            <HBox spacing="10">
+                <Button text="Marcar Pagado" onAction="#onMarcarPagado" styleClass="secondary-btn"/>
+                <Button text="Mi Caja (Hoy)" onAction="#onMiCajaHoy" styleClass="secondary-btn"/>
+            </HBox>
+            <Label fx:id="miCajaLabel"/>
+            <Label fx:id="estadoVendorLabel"/>
+        </VBox>
+    </center>
+</BorderPane>

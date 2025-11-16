@@ -1,0 +1,118 @@
+/* Paleta y estilos globales */
+.app-root {
+  -fx-font-family: "Segoe UI", "Arial", "Helvetica";
+  -fx-background-color: linear-gradient(to bottom, #f7f9fc, #eef3f8);
+}
+
+.top-bar {
+  -fx-background-color: #1f6feb; /* azul agradable */
+  -fx-padding: 12;
+  -fx-spacing: 10;
+}
+.top-bar .label {
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+}
+.top-bar .button {
+  -fx-background-color: transparent;
+  -fx-text-fill: white;
+  -fx-border-color: rgba(255,255,255,0.7);
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+  -fx-padding: 6 12;
+}
+.top-bar .button:hover {
+  -fx-border-color: white;
+}
+
+.card {
+  -fx-background-color: white;
+  -fx-background-radius: 12;
+  -fx-padding: 16;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 4);
+}
+
+.title {
+  -fx-font-size: 22px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #0b3d91; /* azul profundo */
+}
+
+/* Botones temáticos */
+.button {
+  -fx-background-radius: 8;
+  -fx-padding: 8 14;
+}
+
+.primary-btn {
+  -fx-background-color: #2da44e; /* verde */
+  -fx-text-fill: white;
+}
+.primary-btn:hover { -fx-background-color: #2c974b; }
+.primary-btn:pressed { -fx-background-color: #2a7f41; }
+
+.secondary-btn {
+  -fx-background-color: #6c757d; /* gris */
+  -fx-text-fill: white;
+}
+.secondary-btn:hover { -fx-background-color: #5f6770; }
+
+.danger-btn {
+  -fx-background-color: #d73a49; /* rojo */
+  -fx-text-fill: white;
+}
+.danger-btn:hover { -fx-background-color: #c93c47; }
+
+/* Campos de formulario */
+.text-field, .combo-box {
+  -fx-background-radius: 8;
+  -fx-border-color: #d0d7de;
+  -fx-border-radius: 8;
+}
+
+/* Tabla */
+.table-view {
+  -fx-background-color: transparent;
+}
+.table-view .column-header-background {
+  -fx-background-color: #f0f6fc;
+}
+.table-view .table-row-cell:selected {
+  -fx-background-color: #ddf4ff;
+}
+
+/* Separador suave */
+.separator .line {
+  -fx-background-color: #eaeef2;
+}
+
+/* Login específico */
+.split-left {
+  -fx-background-color: #1565c0; /* azul intenso */
+  -fx-padding: 24;
+  -fx-spacing: 16;
+}
+.split-left .label { -fx-text-fill: white; }
+.brand-title { -fx-font-size: 24px; -fx-font-weight: bold; }
+.brand-subtitle { -fx-font-size: 14px; }
+
+.login-card { -fx-padding: 20; }
+.form-icon { -fx-font-size: 18px; -fx-text-fill: #0b3d91; }
+.error-text { -fx-text-fill: #d73a49; -fx-font-weight: bold; }
+
+.text-field:focused, .password-field:focused, .combo-box:focused {
+  -fx-border-color: #1f6feb;
+  -fx-border-width: 1.2;
+}
+
+/* Botón de icono para alternar visibilidad de contraseña */
+.icon-btn {
+  -fx-background-color: transparent;
+  -fx-text-fill: #2c3e50;
+  -fx-font-size: 16px;
+  -fx-padding: 4 8;
+  -fx-cursor: hand;
+  -fx-border-radius: 6px;
+  -fx-background-radius: 6px;
+}
+.icon-btn:hover { -fx-background-color: rgba(0,0,0,0.06); }

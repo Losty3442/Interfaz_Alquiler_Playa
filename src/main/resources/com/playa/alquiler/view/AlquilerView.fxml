@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.playa.alquiler.controller.AlquilerController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
+    <top>
+        <Label text="Crear Alquiler" styleClass="title" />
+    </top>
+    <center>
+        <VBox spacing="10" style="-fx-padding: 12;" styleClass="card">
+            <Label text="Turista" style="-fx-font-size: 14px;" />
+            <HBox spacing="12">
+                <TextField fx:id="turistaTelefonoField" promptText="Teléfono" />
+                <Button text="Buscar" onAction="#onBuscarTuristaPorTelefono" styleClass="secondary-btn" />
+                <Label text="Usuario ID" />
+                <TextField fx:id="usuarioIdField" promptText="ID usuario" />
+            </HBox>
+            <GridPane hgap="8" vgap="8">
+                <Label text="Nombres" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                <TextField fx:id="nombresField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                <Label text="Apellidos" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                <TextField fx:id="apellidosField" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                <Label text="Email" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                <TextField fx:id="emailField" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+                <Label text="Teléfono" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                <TextField fx:id="telefonoField" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+                <Label text="Nacionalidad" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                <TextField fx:id="nacionalidadField" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+            </GridPane>
+            <Button text="Registrar Turista" onAction="#onRegistrarTuristaNuevo" styleClass="secondary-btn" />
+
+            <Separator />
+            <Label text="Agregar Detalle" style="-fx-font-size: 14px;" />
+            <HBox spacing="12">
+                <VBox spacing="6">
+                    <Label text="Recurso Disponible" />
+                    <ComboBox fx:id="recursoCombo" prefWidth="250" />
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="Horas" />
+                    <TextField fx:id="horasField" promptText="Ej: 2.0" />
+                </VBox>
+                <VBox spacing="6">
+                    <Label text="Promoción (opcional)" />
+                    <ComboBox fx:id="promoCombo" prefWidth="220" />
+                </VBox>
+                <Button text="Agregar" onAction="#onAddDetalle" styleClass="secondary-btn" />
+            </HBox>
+
+            <TableView fx:id="detallesTable" prefHeight="250" styleClass="table-view">
+                <columns>
+                    <TableColumn fx:id="colRecursoId" text="Recurso ID" prefWidth="100" />
+                    <TableColumn fx:id="colHoras" text="Horas" prefWidth="100" />
+                    <TableColumn fx:id="colPromo" text="Promoción ID" prefWidth="120" />
+                </columns>
+            </TableView>
+
+            <HBox spacing="12">
+                <Button text="Registrar Alquiler" onAction="#onRegistrarAlquiler" styleClass="primary-btn" />
+                <Button text="Marcar Pagado" onAction="#onMarcarPagado" styleClass="secondary-btn" />
+                <Label fx:id="totalLabel" text="Total estimado: S/ -" />
+                <Label fx:id="statusLabel" />
+            </HBox>
+
+            <Separator />
+            <HBox spacing="12">
+                <VBox spacing="6">
+                    <Label text="Alquiler ID a finalizar" />
+                    <TextField fx:id="alquilerIdField" promptText="Ej: 1" />
+                </VBox>
+                <Button text="Finalizar Alquiler" onAction="#onFinalizarAlquiler" styleClass="secondary-btn" />
+            </HBox>
+
+            <Separator />
+            <Label text="Consultar / Cancelar" style="-fx-font-size: 14px;" />
+            <HBox spacing="12">
+                <ComboBox fx:id="estadoFiltroCombo" promptText="Estado" />
+                <Button text="Consultar" onAction="#onConsultarAlquileres" styleClass="secondary-btn" />
+                <Button text="Cancelar Seleccionado" onAction="#onCancelarSeleccionado" styleClass="danger-btn" />
+            </HBox>
+            <TableView fx:id="alquileresTable" prefHeight="200" styleClass="table-view">
+                <columns>
+                    <TableColumn fx:id="colAlqId" text="Alquiler ID" prefWidth="120" />
+                    <TableColumn fx:id="colAlqEstado" text="Estado" prefWidth="120" />
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+</BorderPane>
