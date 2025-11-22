@@ -30,7 +30,12 @@ public class VendorController {
             Parent root = FXMLLoader.load(getClass().getResource("/com/playa/alquiler/view/AlquilerView.fxml"));
             Stage stage = new Stage();
             stage.setTitle("Crear / Finalizar Alquiler");
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root, 1000, 720);
+            stage.setScene(scene);
+            stage.setMinWidth(800);
+            stage.setMinHeight(600);
+            stage.setResizable(true);
+            stage.centerOnScreen();
             stage.show();
         } catch (Exception ex) {
             estadoVendorLabel.setText("Error abriendo ventana: " + ex.getMessage());

@@ -2,6 +2,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.AdminController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
     <top>
         <HBox spacing="10" styleClass="top-bar">
@@ -20,7 +21,6 @@
                     <Label text="Acciones" style="-fx-font-weight: bold;"/>
                     <Button text="Gestionar Usuarios" onAction="#mostrarGestionUsuarios" styleClass="secondary-btn"/>
                     <Button text="Gestionar Promociones" onAction="#mostrarGestionPromociones" styleClass="secondary-btn"/>
-                    <Button text="Gestionar Tarifas" onAction="#mostrarGestionTarifas" styleClass="secondary-btn"/>
                     <Button text="Gestionar Recursos" onAction="#mostrarGestionRecursos" styleClass="secondary-btn"/>
                     <Button text="Ver Reportes" onAction="#mostrarReportes" styleClass="secondary-btn"/>
                 </VBox>
@@ -85,35 +85,10 @@
                         </HBox>
                     </VBox>
 
-                    <!-- Panel Tarifas -->
+                    <!-- Panel Tarifas (Integrado en Recursos) -->
                     <VBox fx:id="tarifasPane" spacing="8" visible="false" managed="false" styleClass="card">
                         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Tarifas por Recurso" style="-fx-font-weight: bold;"/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="ID Recurso:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="tarifaRecursoIdField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <Button text="Listar" onAction="#onListarTarifasPorRecurso" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="secondary-btn"/>
-                        </GridPane>
-                        <TableView fx:id="tarifasTable" prefHeight="240" styleClass="table-view">
-                            <columns>
-                                <TableColumn fx:id="colTarifaId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colTarifaPrecio" text="Precio/Hora" prefWidth="120"/>
-                                <TableColumn fx:id="colTarifaInicio" text="Inicio" prefWidth="120"/>
-                                <TableColumn fx:id="colTarifaFin" text="Fin" prefWidth="120"/>
-                            </columns>
-                        </TableView>
-                        <Separator/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Precio/Hora:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="tarifaPrecioField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <Label text="Fecha Inicio:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <DatePicker fx:id="tarifaInicioPicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                            <Label text="Fecha Fin (opcional):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                            <DatePicker fx:id="tarifaFinPicker" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button text="Agregar Tarifa" onAction="#onCrearTarifa" styleClass="primary-btn"/>
-                        </HBox>
+                        <Label text="(Movido) Usa 'Gestionar Recursos' para administrar tarifas"/>
                     </VBox>
 
                     <!-- Panel Recursos -->
@@ -146,32 +121,78 @@
                             <Button text="Marcar En Mantenimiento" onAction="#onMarcarMantenimiento" styleClass="secondary-btn"/>
                             <Button text="Marcar Disponible" onAction="#onMarcarDisponible" styleClass="secondary-btn"/>
                         </HBox>
+
+                        <Separator/>
+                        <Label text="Tarifas del recurso seleccionado" style="-fx-font-weight: bold;"/>
+                        <TableView fx:id="tarifasRecursoTable" prefHeight="200" styleClass="table-view">
+                            <columns>
+                                <TableColumn fx:id="colTarifaId" text="ID" prefWidth="60"/>
+                                <TableColumn fx:id="colTarifaPrecio" text="Precio/Hora" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                        <GridPane hgap="8" vgap="8">
+                            <Label text="Precio/Hora" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <TextField fx:id="tarifaPrecioField2" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        </GridPane>
+                        <HBox spacing="10">
+                            <Button text="Agregar Tarifa al Recurso" onAction="#onAgregarTarifaRecurso" styleClass="primary-btn"/>
+                        </HBox>
                     </VBox>
 
                     <!-- Panel Reportes -->
                     <VBox fx:id="reportesPane" spacing="8" visible="false" managed="false" styleClass="card">
                         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Reportes rápidos" style="-fx-font-weight: bold;"/>
+                        <Label text="Reportes" style="-fx-font-weight: bold;"/>
                         <Label fx:id="lblEnCurso" text="En curso: -"/>
                         <Label fx:id="lblFinalizados" text="Finalizados: -"/>
                         <Separator/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Top N Recursos" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="topNField" promptText="Ej: 5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <Button text="Ver Top" onAction="#onTopRecursos" GridPane.rowIndex="0" GridPane.columnIndex="2" styleClass="secondary-btn"/>
-                        </GridPane>
-                        <ListView fx:id="listaTopRecursos" prefHeight="120"/>
+                        
                         <Separator/>
                         <Button text="Recursos en Mantenimiento" onAction="#onRecursosMantenimiento" styleClass="secondary-btn"/>
                         <ListView fx:id="listaMantenimiento" prefHeight="120"/>
                         <Separator/>
+                        
+
+                        <Separator/>
                         <GridPane hgap="8" vgap="8">
-                            <Label text="Tarifa vigente (Recurso/Fecha)" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="recursoIdTarifaField" promptText="ID Recurso" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <DatePicker fx:id="fechaTarifaPicker" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                            <Button text="Consultar" onAction="#onTarifaVigente" GridPane.rowIndex="0" GridPane.columnIndex="3" styleClass="secondary-btn"/>
+                            <Label text="Período" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <DatePicker fx:id="desdePicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            <DatePicker fx:id="hastaPicker" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                            <Button text="Aplicar" onAction="#onAplicarPeriodo" GridPane.rowIndex="0" GridPane.columnIndex="3" styleClass="secondary-btn"/>
                         </GridPane>
-                        <Label fx:id="lblTarifaVigente"/>
+
+                        <Label text="Recurso más alquilado" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="lblMasAlquilado"/>
+
+                        <Separator/>
+                        <Label text="Montos generados por tipo" style="-fx-font-weight: bold;"/>
+                        <HBox spacing="8">
+                            <Button text="Calcular" onAction="#onMontosGenerados" styleClass="secondary-btn"/>
+                            <Button text="Exportar CSV" onAction="#onExportarMontosCSV" styleClass="secondary-btn"/>
+                        </HBox>
+                        <BarChart fx:id="barMontos" prefHeight="220">
+                            <xAxis>
+                                <CategoryAxis label="Tipo de Recurso"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Monto (S/)"/>
+                            </yAxis>
+                        </BarChart>
+
+                        <Separator/>
+                        <Label text="Clientes frecuentes" style="-fx-font-weight: bold;"/>
+                        <ListView fx:id="listaClientesFrecuentes" prefHeight="120"/>
+
+                        <Separator/>
+                        <Label text="Tendencias mensuales" style="-fx-font-weight: bold;"/>
+                        <LineChart fx:id="lineTendencias" prefHeight="220">
+                            <xAxis>
+                                <CategoryAxis label="Mes"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Alquileres"/>
+                            </yAxis>
+                        </LineChart>
                     </VBox>
                 </StackPane>
             </items>

@@ -39,6 +39,7 @@ public class AlquilerController {
     @FXML private TableColumn<Alquiler, Integer> colAlqId;
     @FXML private TableColumn<Alquiler, String> colAlqEstado;
     @FXML private ComboBox<String> estadoFiltroCombo;
+    @FXML private javafx.scene.control.ScrollPane alquilerScroll;
 
     private final ObservableList<DetalleAlquiler> detalles = FXCollections.observableArrayList();
 
@@ -88,6 +89,17 @@ public class AlquilerController {
             colAlqId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("alquilerId"));
             colAlqEstado.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("estadoAlquiler"));
             estadoFiltroCombo.setItems(FXCollections.observableArrayList("En Curso", "Reservado", "Finalizado", "Cancelado"));
+        }
+
+        if (alquilerScroll != null) {
+            alquilerScroll.addEventFilter(javafx.scene.input.ScrollEvent.SCROLL, e -> {
+                double v = alquilerScroll.getVvalue();
+                double speed = 0.003;
+                double next = v - e.getDeltaY() * speed;
+                if (next < 0) next = 0; else if (next > 1) next = 1;
+                alquilerScroll.setVvalue(next);
+                e.consume();
+            });
         }
     }
 
@@ -226,13 +238,12 @@ public class AlquilerController {
             java.math.BigDecimal total = java.math.BigDecimal.ZERO;
             var tarifaDAO = new com.playa.alquiler.dao.TarifaRecursoDAO();
             var promoDAO = new com.playa.alquiler.dao.PromocionDAO();
-            java.time.LocalDate ref = java.time.LocalDate.now();
             for (DetalleAlquiler d : detalles) {
-                var tarifa = tarifaDAO.obtenerTarifaVigente(d.getRecursoId(), ref);
+                var tarifa = tarifaDAO.obtenerUltimaTarifa(d.getRecursoId());
                 if (tarifa == null) continue;
                 java.math.BigDecimal base = tarifa.getPrecioPorHora().multiply(d.getCantidadHoras());
                 com.playa.alquiler.model.Promocion promo = null;
-                if (d.getPromocionId() != null) promo = promoDAO.obtenerActivaPorId(d.getPromocionId(), ref);
+                if (d.getPromocionId() != null) promo = promoDAO.obtenerActivaPorId(d.getPromocionId(), java.time.LocalDate.now());
                 java.math.BigDecimal t = aplicarPromocionLocal(base, promo);
                 total = total.add(t);
             }

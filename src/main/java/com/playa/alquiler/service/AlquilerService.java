@@ -69,9 +69,8 @@ public class AlquilerService {
                         throw new SQLException("Recurso ID " + d.getRecursoId() + " no está disponible");
                     }
 
-                    // Obtener tarifa vigente
-                    TarifaRecurso tarifa = tarifaDAO.obtenerTarifaVigente(d.getRecursoId(), fechaRef);
-                    if (tarifa == null) throw new SQLException("Sin tarifa vigente para recurso ID " + d.getRecursoId());
+                    TarifaRecurso tarifa = tarifaDAO.obtenerUltimaTarifa(d.getRecursoId());
+                    if (tarifa == null) throw new SQLException("Sin tarifa para recurso ID " + d.getRecursoId());
 
                     // Calcular total por detalle
                     BigDecimal base = tarifa.getPrecioPorHora().multiply(d.getCantidadHoras());

@@ -33,6 +33,26 @@ public class TarifaRecursoDAO {
         }
     }
 
+    public TarifaRecurso obtenerUltimaTarifa(int idRecurso) throws SQLException {
+        String sql = "SELECT TOP 1 id_tarifa, id_recurso, precio_por_hora, fecha_inicio, fecha_fin FROM tarifa_recurso WHERE id_recurso = ? ORDER BY fecha_inicio DESC, id_tarifa DESC";
+        try (Connection conn = ConexionDB.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idRecurso);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TarifaRecurso t = new TarifaRecurso();
+                    t.setIdTarifa(rs.getInt("id_tarifa"));
+                    t.setIdRecurso(rs.getInt("id_recurso"));
+                    t.setPrecioPorHora(rs.getBigDecimal("precio_por_hora"));
+                    t.setFechaInicio(rs.getDate("fecha_inicio").toLocalDate());
+                    java.sql.Date fin = rs.getDate("fecha_fin");
+                    t.setFechaFin(fin == null ? null : fin.toLocalDate());
+                    return t;
+                }
+            }
+            return null;
+        }
+    }
+
     public java.util.List<TarifaRecurso> listarPorRecurso(int idRecurso) throws SQLException {
         String sql = "SELECT id_tarifa, id_recurso, precio_por_hora, fecha_inicio, fecha_fin FROM tarifa_recurso WHERE id_recurso=? ORDER BY fecha_inicio DESC, id_tarifa DESC";
         try (Connection conn = ConexionDB.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

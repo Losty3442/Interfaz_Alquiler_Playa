@@ -8,7 +8,9 @@
         <Label text="Crear Alquiler" styleClass="title" />
     </top>
     <center>
-        <VBox spacing="10" style="-fx-padding: 12;" styleClass="card">
+        <ScrollPane fx:id="alquilerScroll" fitToWidth="true" fitToHeight="true" pannable="true" vbarPolicy="AS_NEEDED">
+            <content>
+                <VBox spacing="10" style="-fx-padding: 12;" styleClass="card" maxWidth="900">
             <Label text="Turista" style="-fx-font-size: 14px;" />
             <HBox spacing="12">
                 <TextField fx:id="turistaTelefonoField" promptText="Teléfono" />
@@ -48,7 +50,7 @@
                 <Button text="Agregar" onAction="#onAddDetalle" styleClass="secondary-btn" />
             </HBox>
 
-            <TableView fx:id="detallesTable" prefHeight="250" styleClass="table-view">
+            <TableView fx:id="detallesTable" prefHeight="220" styleClass="table-view">
                 <columns>
                     <TableColumn fx:id="colRecursoId" text="Recurso ID" prefWidth="100" />
                     <TableColumn fx:id="colHoras" text="Horas" prefWidth="100" />
@@ -79,12 +81,14 @@
                 <Button text="Consultar" onAction="#onConsultarAlquileres" styleClass="secondary-btn" />
                 <Button text="Cancelar Seleccionado" onAction="#onCancelarSeleccionado" styleClass="danger-btn" />
             </HBox>
-            <TableView fx:id="alquileresTable" prefHeight="200" styleClass="table-view">
+            <TableView fx:id="alquileresTable" prefHeight="180" styleClass="table-view">
                 <columns>
                     <TableColumn fx:id="colAlqId" text="Alquiler ID" prefWidth="120" />
                     <TableColumn fx:id="colAlqEstado" text="Estado" prefWidth="120" />
                 </columns>
             </TableView>
-        </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
     </center>
 </BorderPane>

@@ -67,12 +67,15 @@ public class AdminController {
     // Reportes
     @FXML private Label lblEnCurso;
     @FXML private Label lblFinalizados;
-    @FXML private TextField topNField;
-    @FXML private ListView<String> listaTopRecursos;
+    
     @FXML private ListView<String> listaMantenimiento;
-    @FXML private TextField recursoIdTarifaField;
-    @FXML private javafx.scene.control.DatePicker fechaTarifaPicker;
-    @FXML private Label lblTarifaVigente;
+    
+    @FXML private javafx.scene.control.DatePicker desdePicker;
+    @FXML private javafx.scene.control.DatePicker hastaPicker;
+    @FXML private Label lblMasAlquilado;
+    @FXML private javafx.scene.chart.BarChart<String, Number> barMontos;
+    @FXML private javafx.scene.chart.LineChart<String, Number> lineTendencias;
+    @FXML private javafx.scene.control.ListView<String> listaClientesFrecuentes;
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final RolDAO rolDAO = new RolDAO();
@@ -91,6 +94,10 @@ public class AdminController {
     @FXML private TextField recursoDescripcionField;
     @FXML private TextField recursoTipoField;
     @FXML private ComboBox<String> recursoEstadoCombo;
+    @FXML private TableView<TarifaRecurso> tarifasRecursoTable;
+    @FXML private TextField tarifaPrecioField2;
+    @FXML private javafx.scene.control.DatePicker tarifaInicioPicker2;
+    @FXML private javafx.scene.control.DatePicker tarifaFinPicker2;
 
     @FXML
     public void initialize() {
@@ -143,14 +150,6 @@ public class AdminController {
         }
 
         // Configurar tabla tarifas
-        if (tarifasTable != null) {
-            colTarifaId.setCellValueFactory(new PropertyValueFactory<>("idTarifa"));
-            colTarifaPrecio.setCellValueFactory(new PropertyValueFactory<>("precioPorHora"));
-            colTarifaInicio.setCellValueFactory(new PropertyValueFactory<>("fechaInicio"));
-            colTarifaFin.setCellValueFactory(new PropertyValueFactory<>("fechaFin"));
-            tarifasTable.setItems(tarifas);
-        }
-
         if (recursosTable != null) {
             colRecId.setCellValueFactory(new PropertyValueFactory<>("idRecurso"));
             colRecNombre.setCellValueFactory(new PropertyValueFactory<>("nombreRecurso"));
@@ -159,6 +158,26 @@ public class AdminController {
             recursosTable.setItems(recursos);
             recursoEstadoCombo.setItems(FXCollections.observableArrayList("Disponible","En Mantenimiento","Alquilado"));
             recargarRecursos();
+
+            // Configurar tabla de tarifas integradas
+                if (tarifasRecursoTable != null) {
+                    colTarifaId.setCellValueFactory(new PropertyValueFactory<>("idTarifa"));
+                    colTarifaPrecio.setCellValueFactory(new PropertyValueFactory<>("precioPorHora"));
+                    tarifasRecursoTable.setItems(tarifas);
+                    if (colTarifaInicio != null) colTarifaInicio.setVisible(false);
+                    if (colTarifaFin != null) colTarifaFin.setVisible(false);
+                }
+
+            recursosTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+                if (newSel != null) {
+                    recargarTarifasRecurso(newSel.getIdRecurso());
+                    // precargar formulario con estado actual del recurso
+                    recursoNombreField.setText(newSel.getNombreRecurso());
+                    recursoDescripcionField.setText(newSel.getDescripcion());
+                    recursoTipoField.setText(newSel.getTipoDeRecurso());
+                    recursoEstadoCombo.getSelectionModel().select(newSel.getEstado());
+                }
+            });
         }
 
         recargarUsuarios();
@@ -201,11 +220,7 @@ public class AdminController {
 
     @FXML
     public void mostrarGestionTarifas(ActionEvent e) {
-        usuariosPane.setVisible(false); usuariosPane.setManaged(false);
-        promocionesPane.setVisible(false); promocionesPane.setManaged(false);
-        tarifasPane.setVisible(true); tarifasPane.setManaged(true);
-        recursosPane.setVisible(false); recursosPane.setManaged(false);
-        reportesPane.setVisible(false); reportesPane.setManaged(false);
+        mostrarGestionRecursos(e);
     }
 
     @FXML
@@ -221,6 +236,11 @@ public class AdminController {
             int fin = adao.contarPorEstado("Finalizado");
             lblEnCurso.setText("En curso: " + enCurso);
             lblFinalizados.setText("Finalizados: " + fin);
+            if (desdePicker != null && hastaPicker != null) {
+                if (desdePicker.getValue() == null) desdePicker.setValue(java.time.LocalDate.now().minusDays(30));
+                if (hastaPicker.getValue() == null) hastaPicker.setValue(java.time.LocalDate.now());
+            }
+            onAplicarPeriodo(null);
         } catch (SQLException ex) {
             estadoAdminLabel.setText("Error cargando reportes: " + ex.getMessage());
         }
@@ -241,6 +261,15 @@ public class AdminController {
             recursos.setAll(new com.playa.alquiler.dao.RecursoDAO().listarTodos());
         } catch (SQLException e) {
             estadoAdminLabel.setText("Error cargando recursos: " + e.getMessage());
+        }
+    }
+
+    private void recargarTarifasRecurso(int recursoId) {
+        try {
+            tarifas.setAll(new TarifaRecursoDAO().listarPorRecurso(recursoId));
+            estadoAdminLabel.setText("Tarifas cargadas para recurso " + recursoId);
+        } catch (SQLException e) {
+            estadoAdminLabel.setText("Error cargando tarifas: " + e.getMessage());
         }
     }
 
@@ -317,20 +346,32 @@ public class AdminController {
     }
 
     @FXML
-    public void onTopRecursos(ActionEvent e) {
+    public void onAgregarTarifaRecurso(ActionEvent e) {
+        if (com.playa.alquiler.service.CurrentSession.getNombreRol() == null ||
+                !"Administrador".equalsIgnoreCase(com.playa.alquiler.service.CurrentSession.getNombreRol())) {
+            estadoAdminLabel.setText("No autorizado para modificar tarifas");
+            return;
+        }
+        com.playa.alquiler.model.Recurso sel = recursosTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { estadoAdminLabel.setText("Seleccione un recurso"); return; }
         try {
-            int topN = Integer.parseInt(topNField.getText());
-            var lista = new com.playa.alquiler.service.ReporteService().usoRecursosTopN(topN);
-            ObservableList<String> items = FXCollections.observableArrayList();
-            for (var r : lista) items.add("Recurso " + r.getRecursoId() + " = " + r.getVeces() + " veces");
-            listaTopRecursos.setItems(items);
-            estadoAdminLabel.setText("Top recursos cargado");
+            java.math.BigDecimal precio = new java.math.BigDecimal(tarifaPrecioField2.getText());
+            TarifaRecurso t = new TarifaRecurso();
+            t.setIdRecurso(sel.getIdRecurso());
+            t.setPrecioPorHora(precio);
+            t.setFechaInicio(java.time.LocalDate.now());
+            t.setFechaFin(null);
+            new TarifaRecursoDAO().crear(t);
+            estadoAdminLabel.setText("Tarifa actualizada para recurso " + sel.getIdRecurso());
+            recargarTarifasRecurso(sel.getIdRecurso());
         } catch (NumberFormatException nfe) {
-            estadoAdminLabel.setText("Top N inválido");
+            estadoAdminLabel.setText("Precio inválido");
         } catch (SQLException ex) {
-            estadoAdminLabel.setText("Error top recursos: " + ex.getMessage());
+            estadoAdminLabel.setText("Error creando tarifa: " + ex.getMessage());
         }
     }
+
+    
 
     @FXML
     public void onRecursosMantenimiento(ActionEvent e) {
@@ -345,21 +386,153 @@ public class AdminController {
         }
     }
 
+    
+
     @FXML
-    public void onTarifaVigente(ActionEvent e) {
+    public void onAplicarPeriodo(ActionEvent e) {
         try {
-            int recursoId = Integer.parseInt(recursoIdTarifaField.getText());
-            java.time.LocalDate fecha = fechaTarifaPicker.getValue();
-            var t = new com.playa.alquiler.service.ReporteService().tarifaVigente(recursoId, fecha != null ? fecha : java.time.LocalDate.now());
-            if (t == null) {
-                lblTarifaVigente.setText("Sin tarifa vigente");
-            } else {
-                lblTarifaVigente.setText("Precio: S/ " + t.getPrecioPorHora());
+            java.time.LocalDate d = desdePicker.getValue();
+            java.time.LocalDate h = hastaPicker.getValue();
+            try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection()) {
+                java.sql.PreparedStatement psT = conn.prepareStatement("SELECT COUNT(*) FROM detalle_alquiler d JOIN Alquileres a ON a.alquiler_id=d.alquiler_id WHERE a.fecha BETWEEN ? AND ?");
+                psT.setDate(1, java.sql.Date.valueOf(d));
+                psT.setDate(2, java.sql.Date.valueOf(h));
+                long totalGeneral = 0;
+                try (java.sql.ResultSet rs = psT.executeQuery()) { if (rs.next()) totalGeneral = rs.getLong(1); }
+                java.sql.PreparedStatement ps = conn.prepareStatement("SELECT TOP 1 d.recurso_id, COUNT(*) AS total FROM detalle_alquiler d JOIN Alquileres a ON a.alquiler_id=d.alquiler_id WHERE a.fecha BETWEEN ? AND ? GROUP BY d.recurso_id ORDER BY total DESC, d.recurso_id");
+                ps.setDate(1, java.sql.Date.valueOf(d));
+                ps.setDate(2, java.sql.Date.valueOf(h));
+                try (java.sql.ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        int rid = rs.getInt(1);
+                        long cant = rs.getLong(2);
+                        String nombre = new com.playa.alquiler.dao.RecursoDAO().obtenerPorId(rid).getNombreRecurso();
+                        double pct = totalGeneral == 0 ? 0.0 : (cant * 100.0) / totalGeneral;
+                        lblMasAlquilado.setText("Recurso: " + nombre + " • Alquileres: " + cant + " • Utilización: " + String.format("%.1f", pct) + "%");
+                    } else {
+                        lblMasAlquilado.setText("Sin datos en período");
+                    }
+                }
             }
-        } catch (NumberFormatException nfe) {
-            estadoAdminLabel.setText("ID de recurso inválido");
+            cargarTendencias(d, h);
+            cargarClientesFrecuentes(d, h);
+        } catch (Exception ex) {
+            estadoAdminLabel.setText("Error aplicando período: " + ex.getMessage());
+        }
+    }
+
+    private void cargarTendencias(java.time.LocalDate d, java.time.LocalDate h) throws SQLException {
+        java.util.Map<String, Integer> datos = new java.util.LinkedHashMap<>();
+        try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT FORMAT(a.fecha,'yyyy-MM') AS mes, COUNT(*) AS c FROM Alquileres a WHERE a.fecha BETWEEN ? AND ? GROUP BY FORMAT(a.fecha,'yyyy-MM') ORDER BY mes")) {
+            ps.setDate(1, java.sql.Date.valueOf(d));
+            ps.setDate(2, java.sql.Date.valueOf(h));
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) datos.put(rs.getString(1), rs.getInt(2));
+            }
+        }
+        if (lineTendencias != null) {
+            lineTendencias.getData().clear();
+            javafx.scene.chart.XYChart.Series<String, Number> s = new javafx.scene.chart.XYChart.Series<>();
+            for (var entry : datos.entrySet()) s.getData().add(new javafx.scene.chart.XYChart.Data<>(entry.getKey(), entry.getValue()));
+            lineTendencias.getData().add(s);
+        }
+    }
+
+    private void cargarClientesFrecuentes(java.time.LocalDate d, java.time.LocalDate h) throws SQLException {
+        javafx.collections.ObservableList<String> items = FXCollections.observableArrayList();
+        try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT TOP 5 t.nombres + ' ' + t.apellidos AS nombre, COUNT(*) AS c FROM Alquileres a JOIN Turista t ON t.id_turista=a.id_turista WHERE a.fecha BETWEEN ? AND ? GROUP BY t.nombres, t.apellidos ORDER BY c DESC")) {
+            ps.setDate(1, java.sql.Date.valueOf(d));
+            ps.setDate(2, java.sql.Date.valueOf(h));
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) items.add(rs.getString(1) + " (" + rs.getInt(2) + ")");
+            }
+        }
+        listaClientesFrecuentes.setItems(items);
+    }
+
+    @FXML
+    public void onMontosGenerados(ActionEvent e) {
+        try {
+            java.time.LocalDate d = desdePicker.getValue();
+            java.time.LocalDate h = hastaPicker.getValue();
+            java.util.Map<String, java.math.BigDecimal> porTipo = new java.util.HashMap<>();
+            java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+            try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT d.recurso_id, r.tipo_de_recurso, d.cantidad_horas FROM detalle_alquiler d JOIN Alquileres a ON a.alquiler_id=d.alquiler_id JOIN Recursos r ON r.id_recurso=d.recurso_id WHERE a.fecha BETWEEN ? AND ?")) {
+                ps.setDate(1, java.sql.Date.valueOf(d));
+                ps.setDate(2, java.sql.Date.valueOf(h));
+                try (java.sql.ResultSet rs = ps.executeQuery()) {
+                    com.playa.alquiler.dao.TarifaRecursoDAO trDAO = new com.playa.alquiler.dao.TarifaRecursoDAO();
+                    while (rs.next()) {
+                        int rid = rs.getInt(1);
+                        String tipo = rs.getString(2);
+                        java.math.BigDecimal horas = rs.getBigDecimal(3);
+                        var t = trDAO.obtenerUltimaTarifa(rid);
+                        if (t == null) continue;
+                        java.math.BigDecimal monto = t.getPrecioPorHora().multiply(horas);
+                        porTipo.merge(tipo == null ? "Sin Tipo" : tipo, monto, java.math.BigDecimal::add);
+                        total = total.add(monto);
+                    }
+                }
+            }
+            if (barMontos != null) {
+                barMontos.getData().clear();
+                java.util.List<java.util.Map.Entry<String, java.math.BigDecimal>> entries = new java.util.ArrayList<>(porTipo.entrySet());
+                entries.sort((a,b) -> b.getValue().compareTo(a.getValue()));
+                javafx.scene.chart.XYChart.Series<String, Number> serie = new javafx.scene.chart.XYChart.Series<>();
+                for (var entry : entries) serie.getData().add(new javafx.scene.chart.XYChart.Data<>(entry.getKey(), entry.getValue()));
+                var xAxis = (javafx.scene.chart.CategoryAxis) barMontos.getXAxis();
+                xAxis.setCategories(javafx.collections.FXCollections.observableArrayList(entries.stream().map(java.util.Map.Entry::getKey).collect(java.util.stream.Collectors.toList())));
+                barMontos.setLegendVisible(false);
+                barMontos.setCategoryGap(20);
+                barMontos.setBarGap(6);
+                var catAxis = (javafx.scene.chart.CategoryAxis) barMontos.getXAxis();
+                catAxis.setTickLabelRotation(-20);
+                catAxis.setTickLabelGap(8);
+                var numAxis = (javafx.scene.chart.NumberAxis) barMontos.getYAxis();
+                numAxis.setForceZeroInRange(true);
+                barMontos.getData().add(serie);
+            }
+            estadoAdminLabel.setText("Monto total: S/ " + total);
         } catch (SQLException ex) {
-            estadoAdminLabel.setText("Error tarifa vigente: " + ex.getMessage());
+            estadoAdminLabel.setText("Error montos: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    public void onExportarMontosCSV(ActionEvent e) {
+        try {
+            java.time.LocalDate d = desdePicker.getValue();
+            java.time.LocalDate h = hastaPicker.getValue();
+            java.util.Map<String, java.math.BigDecimal> porTipo = new java.util.HashMap<>();
+            java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+            try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT d.recurso_id, r.tipo_de_recurso, d.cantidad_horas FROM detalle_alquiler d JOIN Alquileres a ON a.alquiler_id=d.alquiler_id JOIN Recursos r ON r.id_recurso=d.recurso_id WHERE a.fecha BETWEEN ? AND ?")) {
+                ps.setDate(1, java.sql.Date.valueOf(d));
+                ps.setDate(2, java.sql.Date.valueOf(h));
+                try (java.sql.ResultSet rs = ps.executeQuery()) {
+                    com.playa.alquiler.dao.TarifaRecursoDAO trDAO = new com.playa.alquiler.dao.TarifaRecursoDAO();
+                    while (rs.next()) {
+                        int rid = rs.getInt(1);
+                        String tipo = rs.getString(2);
+                        java.math.BigDecimal horas = rs.getBigDecimal(3);
+                        var t = trDAO.obtenerUltimaTarifa(rid);
+                        if (t == null) continue;
+                        java.math.BigDecimal monto = t.getPrecioPorHora().multiply(horas);
+                        porTipo.merge(tipo == null ? "Sin Tipo" : tipo, monto, java.math.BigDecimal::add);
+                        total = total.add(monto);
+                    }
+                }
+            }
+            java.nio.file.Path dir = java.nio.file.Paths.get("reports");
+            if (!java.nio.file.Files.exists(dir)) java.nio.file.Files.createDirectories(dir);
+            java.nio.file.Path file = dir.resolve("montos_" + d + "_" + h + ".csv");
+            StringBuilder sb = new StringBuilder();
+            sb.append("tipo,monto\n");
+            for (var entry : porTipo.entrySet()) sb.append(entry.getKey()).append(',').append(entry.getValue()).append('\n');
+            sb.append("TOTAL,").append(total).append('\n');
+            java.nio.file.Files.writeString(file, sb.toString());
+            estadoAdminLabel.setText("Exportado: " + file.toString());
+        } catch (Exception ex) {
+            estadoAdminLabel.setText("Error exportando: " + ex.getMessage());
         }
     }
 
