@@ -12,11 +12,7 @@ public class MainApp extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/com/playa/alquiler/view/LoginView.fxml"));
         primaryStage.setTitle("Login - Alquiler de Equipos de Playa");
         Scene scene = new Scene(root, 800, 500);
-        // Hoja de estilos global como respaldo
-        try {
-            String css = getClass().getResource("/com/playa/alquiler/style/app.css").toExternalForm();
-            scene.getStylesheets().add(css);
-        } catch (Exception ignored) {}
+        com.playa.alquiler.style.ThemeManager.applyLight(scene);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

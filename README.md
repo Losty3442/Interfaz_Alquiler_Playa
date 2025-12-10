@@ -34,7 +34,35 @@ Imagen hero del login: foto "Parasol and the sea" por Kristina Kutleša en Unspl
 - `service/AlquilerService.java`: Esqueleto para la lógica transaccional de alquiler.
 - `view/MainView.fxml`: Vista básica para probar conexión.
 
-## Próximos pasos sugeridos
-- Completar DAOs restantes (`AlquilerDAO`, `DetalleAlquilerDAO`, `PromocionDAO`, `TarifaRecursoDAO`).
-- Implementar `AlquilerService.crearAlquiler(...)` con validaciones, tarifas, promociones y transacciones.
-- Diseñar pantallas de gestión (crear/modificar/cancelar alquileres, CRUD de usuarios/recursos/promociones/tarifas, reportes).
+## Rediseño UI (2025-11)
+Se implementó un dashboard estilo "School Management" en `AdminView.fxml`, con:
+- Sidebar persistente y topbar blanco con buscador.
+- Tarjetas métricas de color (Estudiantes, Docentes, Padres, Ingresos).
+- Gráficos: barras y pie tipo donut.
+- Paneles de gestión existentes accesibles desde el sidebar.
+
+### Modo oscuro eliminado
+- Se removió por completo el modo oscuro.
+- Archivos afectados: `ThemeManager.java` (simplificado solo a `applyLight`), `theme-dark.css` (eliminado), referencias a toggle en `AdminView.fxml` y `VendorView.fxml`.
+
+### Accesibilidad (WCAG 2.1 AA)
+- `accessibleText` en botones del sidebar.
+- Focus visible reforzado en controles (`design-system.css`).
+- Contrastes de color ajustados en `theme-light.css`.
+
+### Responsividad
+- Layouts con `ScrollPane`, `GridPane` y percent widths.
+- Componentes principales con `vgrow/hgrow` para adaptarse a tamaño de ventana.
+
+### Consistencia
+- JavaFX garantiza consistencia en Windows/macOS/Linux con la paleta definida.
+
+### Mantenimiento y guía de diseño
+- Paleta y tokens: `design-system.css` y `theme-light.css`.
+- Tarjetas métricas: clases `metric-students|teachers|parents|earnings`.
+- Para modificar colores de gráficos: revisar `.default-colorN.chart-*` en `theme-light.css`.
+- Para añadir métricas nuevas: declarar `Label` en FXML y enlazar en `AdminController.initialize()`.
+
+### Control de versiones
+- Cambios agrupados en commits por vista/estilo/controlador.
+- Sugerencia: usar convenciones Conventional Commits para seguimiento (`feat(ui)`, `refactor(style)`, `fix(accessibility)`).

@@ -31,6 +31,7 @@ public class VendorController {
             Stage stage = new Stage();
             stage.setTitle("Crear / Finalizar Alquiler");
             Scene scene = new Scene(root, 1000, 720);
+            com.playa.alquiler.style.ThemeManager.applyLight(scene);
             stage.setScene(scene);
             stage.setMinWidth(800);
             stage.setMinHeight(600);
