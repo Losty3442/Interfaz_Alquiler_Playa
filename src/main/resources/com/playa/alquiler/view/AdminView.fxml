@@ -3,32 +3,113 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.chart.*?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.AdminController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.Group?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.AdminController" styleClass="app-root">
+    <left>
+        <VBox styleClass="sidebar" spacing="8" prefWidth="240">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <Label text="Alquiler Playa" styleClass="title"/>
+            <Separator/>
+            <Button text="Home" accessibleText="Ir a inicio" onAction="#mostrarDashboard" mnemonicParsing="false"/>
+            <Button text="Reportes" accessibleText="Ver reportes operativos y de gestión" onAction="#mostrarReportes" mnemonicParsing="false"/>
+            <Button text="Usuarios" accessibleText="Gestión de usuarios" onAction="#mostrarGestionUsuarios" mnemonicParsing="false"/>
+            <Button text="Promociones" accessibleText="Gestión de promociones" onAction="#mostrarGestionPromociones" mnemonicParsing="false"/>
+            <Button text="Recursos" accessibleText="Gestión de recursos" onAction="#mostrarGestionRecursos" mnemonicParsing="false"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="Cerrar sesión" onAction="#onLogout" mnemonicParsing="false"/>
+        </VBox>
+    </left>
     <top>
         <HBox spacing="10" styleClass="top-bar">
-            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-            <Label text="Panel de Administrador" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+            <TextField promptText="¿Qué deseas buscar?" HBox.hgrow="ALWAYS"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="currentUserLabel"/>
-            <Button text="Cerrar sesión" onAction="#onLogout"/>
         </HBox>
     </top>
     <center>
-        <SplitPane>
-            <items>
-                <VBox spacing="8" prefWidth="250" styleClass="card">
-                    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                    <Label text="Acciones" style="-fx-font-weight: bold;"/>
-                    <Button text="Gestionar Usuarios" onAction="#mostrarGestionUsuarios" styleClass="secondary-btn"/>
-                    <Button text="Gestionar Promociones" onAction="#mostrarGestionPromociones" styleClass="secondary-btn"/>
-                    <Button text="Gestionar Recursos" onAction="#mostrarGestionRecursos" styleClass="secondary-btn"/>
-                    <Button text="Ver Reportes" onAction="#mostrarReportes" styleClass="secondary-btn"/>
-                </VBox>
-                <StackPane fx:id="contenidoStack">
+        <ScrollPane fitToWidth="true" fitToHeight="false" pannable="false" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+            <content>
+                <StackPane fx:id="contenidoStack" VBox.vgrow="ALWAYS" alignment="TOP_LEFT">
+                    <!-- Dashboard -->
+                    <VBox fx:id="dashboardPane" spacing="16" visible="true" managed="true" fillWidth="true" maxWidth="Infinity">
+                        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                        <Label text="Panel de Alquileres" styleClass="title"/>
+                        <!-- Métricas -->
+                        <HBox spacing="10">
+                            <VBox spacing="6" styleClass="card metric-card metric-students" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Label text="Alquileres en curso"/>
+                                <Label fx:id="metricStudents" style="-fx-font-size: 22px; -fx-font-weight: 700;"/>
+                            </VBox>
+                            <VBox spacing="6" styleClass="card metric-card metric-teachers" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Label text="Alquileres finalizados"/>
+                                <Label fx:id="metricTeachers" style="-fx-font-size: 22px; -fx-font-weight: 700;"/>
+                            </VBox>
+                            <VBox spacing="6" styleClass="card metric-card metric-parents" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Label text="Recursos disponibles"/>
+                                <Label fx:id="metricParents" style="-fx-font-size: 22px; -fx-font-weight: 700;"/>
+                            </VBox>
+                            <VBox spacing="6" styleClass="card metric-card metric-earnings" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                                <Label text="Ingresos"/>
+                                <Label fx:id="metricEarnings" style="-fx-font-size: 22px; -fx-font-weight: 700;"/>
+                            </VBox>
+                        </HBox>
+                        <!-- Grillas principales -->
+                        <GridPane hgap="12" vgap="12">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="60"/>
+                                <ColumnConstraints percentWidth="40"/>
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints vgrow="ALWAYS"/>
+                                <RowConstraints vgrow="ALWAYS"/>
+                            </rowConstraints>
+                            <!-- Barras -->
+                            <VBox GridPane.rowIndex="0" GridPane.columnIndex="0" spacing="8" styleClass="card" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+                                <Label text="Alquileres por mes"/>
+                                <BarChart fx:id="examResultsBar" prefHeight="220">
+                                    <xAxis>
+                                        <CategoryAxis label="Mes"/>
+                                    </xAxis>
+                                    <yAxis>
+                                        <NumberAxis label="Puntaje"/>
+                                    </yAxis>
+                                </BarChart>
+                            </VBox>
+                            <!-- Donut -->
+                            <VBox GridPane.rowIndex="0" GridPane.columnIndex="1" spacing="8" styleClass="card" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+                                <Label text="Estado de recursos"/>
+                                <StackPane>
+                                    <PieChart fx:id="genderPie" prefHeight="240"/>
+                                    <Circle radius="60" fill="white"/>
+                                </StackPane>
+                            </VBox>
+                            <!-- Tabla usuarios -->
+                            <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" spacing="8" styleClass="card" GridPane.hgrow="ALWAYS">
+                                <Label text="Usuarios"/>
+                                <TableView fx:id="usuariosDashTable" prefHeight="180" styleClass="table-view">
+                                    <columns>
+                                        <TableColumn text="ID" prefWidth="60"/>
+                                        <TableColumn text="Usuario" prefWidth="160"/>
+                                        <TableColumn text="Email" prefWidth="180"/>
+                                        <TableColumn text="Rol" prefWidth="120"/>
+                                    </columns>
+                                </TableView>
+                            </VBox>
+                            <!-- Notificaciones -->
+                            <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="8" styleClass="card" GridPane.hgrow="ALWAYS">
+                                <Label text="Resultados recientes"/>
+                                <ListView fx:id="dashboardNotifications" prefHeight="180"/>
+                                <Button text="Ver todo" onAction="#mostrarReportes" styleClass="secondary-btn"/>
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+                    
                     <!-- Panel Usuarios -->
-                    <VBox fx:id="usuariosPane" spacing="8" styleClass="card">
+                    <VBox fx:id="usuariosPane" spacing="8" visible="false" managed="false" styleClass="card" fillWidth="true" maxWidth="Infinity">
                         <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Usuarios" style="-fx-font-weight: bold;"/>
+                        <Label text="Usuarios"/>
                         <TableView fx:id="usuariosTable" prefHeight="300" styleClass="table-view">
                             <columns>
                                 <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
@@ -55,147 +136,142 @@
                         <Label fx:id="estadoAdminLabel"/>
                     </VBox>
 
-                    <!-- Panel Promociones -->
-                    <VBox fx:id="promocionesPane" spacing="8" visible="false" managed="false" styleClass="card">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Promociones" style="-fx-font-weight: bold;"/>
-                        <TableView fx:id="promosTable" prefHeight="300" styleClass="table-view">
-                            <columns>
-                                <TableColumn fx:id="colPromoId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colPromoNombre" text="Nombre" prefWidth="160"/>
-                                <TableColumn fx:id="colPromoTipo" text="Tipo" prefWidth="120"/>
-                                <TableColumn fx:id="colPromoValor" text="Valor" prefWidth="120"/>
-                                <TableColumn fx:id="colPromoEstado" text="Estado" prefWidth="120"/>
-                            </columns>
-                        </TableView>
-                        <Separator/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Nombre:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="promoNombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <Label text="Tipo:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <ComboBox fx:id="promoTipoCombo" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                            <Label text="Valor:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                            <TextField fx:id="promoValorField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                            <Label text="Estado:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                            <ComboBox fx:id="promoEstadoCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button text="Crear Promoción" onAction="#onCrearPromocion" styleClass="primary-btn"/>
-                            <Button text="Eliminar Seleccionada" onAction="#onEliminarPromocion" styleClass="danger-btn"/>
-                        </HBox>
+                        <!-- Panel Promociones -->
+                    <VBox fx:id="promocionesPane" spacing="8" visible="false" managed="false" styleClass="card" fillWidth="true" maxWidth="Infinity">
+                            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                            <Label text="Promociones"/>
+                            <TableView fx:id="promosTable" prefHeight="300" styleClass="table-view">
+                                <columns>
+                                    <TableColumn fx:id="colPromoId" text="ID" prefWidth="60"/>
+                                    <TableColumn fx:id="colPromoNombre" text="Nombre" prefWidth="160"/>
+                                    <TableColumn fx:id="colPromoTipo" text="Tipo" prefWidth="120"/>
+                                    <TableColumn fx:id="colPromoValor" text="Valor" prefWidth="120"/>
+                                    <TableColumn fx:id="colPromoEstado" text="Estado" prefWidth="120"/>
+                                </columns>
+                            </TableView>
+                            <Separator/>
+                            <GridPane hgap="8" vgap="8">
+                                <Label text="Nombre:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="promoNombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="Tipo:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="promoTipoCombo" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Valor:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="promoValorField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="Estado:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="promoEstadoCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <HBox spacing="10">
+                                <Button text="Crear Promoción" onAction="#onCrearPromocion" styleClass="primary-btn"/>
+                                <Button text="Eliminar Seleccionada" onAction="#onEliminarPromocion" styleClass="danger-btn"/>
+                            </HBox>
                     </VBox>
 
-                    <!-- Panel Tarifas (Integrado en Recursos) -->
-                    <VBox fx:id="tarifasPane" spacing="8" visible="false" managed="false" styleClass="card">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="(Movido) Usa 'Gestionar Recursos' para administrar tarifas"/>
+                        <!-- Panel Recursos -->
+                    <VBox fx:id="recursosPane" spacing="8" visible="false" managed="false" styleClass="card" fillWidth="true" maxWidth="Infinity">
+                            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                            <Label text="Recursos"/>
+                            <TableView fx:id="recursosTable" prefHeight="240" styleClass="table-view">
+                                <columns>
+                                    <TableColumn fx:id="colRecId" text="ID" prefWidth="60"/>
+                                    <TableColumn fx:id="colRecNombre" text="Nombre" prefWidth="160"/>
+                                    <TableColumn fx:id="colRecTipo" text="Tipo" prefWidth="120"/>
+                                    <TableColumn fx:id="colRecEstado" text="Estado" prefWidth="120"/>
+                                </columns>
+                            </TableView>
+                            <Separator/>
+                            <GridPane hgap="8" vgap="8">
+                                <Label text="Nombre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="recursoNombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="Descripción" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="recursoDescripcionField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Tipo" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="recursoTipoField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="Estado" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="recursoEstadoCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <HBox spacing="10">
+                                <Button text="Crear" onAction="#onCrearRecurso" styleClass="primary-btn"/>
+                                <Button text="Actualizar Seleccionado" onAction="#onActualizarRecurso" styleClass="secondary-btn"/>
+                                <Button text="Eliminar Seleccionado" onAction="#onEliminarRecurso" styleClass="danger-btn"/>
+                                <Button text="Marcar En Mantenimiento" onAction="#onMarcarMantenimiento" styleClass="secondary-btn"/>
+                                <Button text="Marcar Disponible" onAction="#onMarcarDisponible" styleClass="secondary-btn"/>
+                            </HBox>
+
+                            <Separator/>
+                            <Label text="Tarifas del recurso seleccionado"/>
+                            <TableView fx:id="tarifasRecursoTable" prefHeight="200" styleClass="table-view">
+                                <columns>
+                                    <TableColumn fx:id="colTarifaId" text="ID" prefWidth="60"/>
+                                    <TableColumn fx:id="colTarifaPrecio" text="Precio/Hora" prefWidth="120"/>
+                                </columns>
+                            </TableView>
+                            <GridPane hgap="8" vgap="8">
+                                <Label text="Precio/Hora" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tarifaPrecioField2" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <HBox spacing="10">
+                                <Button text="Agregar Tarifa al Recurso" onAction="#onAgregarTarifaRecurso" styleClass="primary-btn"/>
+                            </HBox>
                     </VBox>
 
-                    <!-- Panel Recursos -->
-                    <VBox fx:id="recursosPane" spacing="8" visible="false" managed="false" styleClass="card">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Recursos" style="-fx-font-weight: bold;"/>
-                        <TableView fx:id="recursosTable" prefHeight="240" styleClass="table-view">
-                            <columns>
-                                <TableColumn fx:id="colRecId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colRecNombre" text="Nombre" prefWidth="160"/>
-                                <TableColumn fx:id="colRecTipo" text="Tipo" prefWidth="120"/>
-                                <TableColumn fx:id="colRecEstado" text="Estado" prefWidth="120"/>
-                            </columns>
-                        </TableView>
-                        <Separator/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Nombre" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="recursoNombreField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <Label text="Descripción" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                            <TextField fx:id="recursoDescripcionField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                            <Label text="Tipo" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                            <TextField fx:id="recursoTipoField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                            <Label text="Estado" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                            <ComboBox fx:id="recursoEstadoCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button text="Crear" onAction="#onCrearRecurso" styleClass="primary-btn"/>
-                            <Button text="Actualizar Seleccionado" onAction="#onActualizarRecurso" styleClass="secondary-btn"/>
-                            <Button text="Eliminar Seleccionado" onAction="#onEliminarRecurso" styleClass="danger-btn"/>
-                            <Button text="Marcar En Mantenimiento" onAction="#onMarcarMantenimiento" styleClass="secondary-btn"/>
-                            <Button text="Marcar Disponible" onAction="#onMarcarDisponible" styleClass="secondary-btn"/>
-                        </HBox>
-
-                        <Separator/>
-                        <Label text="Tarifas del recurso seleccionado" style="-fx-font-weight: bold;"/>
-                        <TableView fx:id="tarifasRecursoTable" prefHeight="200" styleClass="table-view">
-                            <columns>
-                                <TableColumn fx:id="colTarifaId" text="ID" prefWidth="60"/>
-                                <TableColumn fx:id="colTarifaPrecio" text="Precio/Hora" prefWidth="120"/>
-                            </columns>
-                        </TableView>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Precio/Hora" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <TextField fx:id="tarifaPrecioField2" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                        </GridPane>
-                        <HBox spacing="10">
-                            <Button text="Agregar Tarifa al Recurso" onAction="#onAgregarTarifaRecurso" styleClass="primary-btn"/>
-                        </HBox>
-                    </VBox>
-
-                    <!-- Panel Reportes -->
-                    <VBox fx:id="reportesPane" spacing="8" visible="false" managed="false" styleClass="card">
-                        <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-                        <Label text="Reportes" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblEnCurso" text="En curso: -"/>
-                        <Label fx:id="lblFinalizados" text="Finalizados: -"/>
-                        <Separator/>
-                        
-                        <Separator/>
-                        <Button text="Recursos en Mantenimiento" onAction="#onRecursosMantenimiento" styleClass="secondary-btn"/>
-                        <ListView fx:id="listaMantenimiento" prefHeight="120"/>
-                        <Separator/>
-                        
-
-                        <Separator/>
-                        <GridPane hgap="8" vgap="8">
-                            <Label text="Período" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                            <DatePicker fx:id="desdePicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                            <DatePicker fx:id="hastaPicker" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                            <Button text="Aplicar" onAction="#onAplicarPeriodo" GridPane.rowIndex="0" GridPane.columnIndex="3" styleClass="secondary-btn"/>
-                        </GridPane>
-
-                        <Label text="Recurso más alquilado" style="-fx-font-weight: bold;"/>
-                        <Label fx:id="lblMasAlquilado"/>
-
-                        <Separator/>
-                        <Label text="Montos generados por tipo" style="-fx-font-weight: bold;"/>
-                        <HBox spacing="8">
-                            <Button text="Calcular" onAction="#onMontosGenerados" styleClass="secondary-btn"/>
-                            <Button text="Exportar CSV" onAction="#onExportarMontosCSV" styleClass="secondary-btn"/>
-                        </HBox>
-                        <BarChart fx:id="barMontos" prefHeight="220">
-                            <xAxis>
-                                <CategoryAxis label="Tipo de Recurso"/>
-                            </xAxis>
-                            <yAxis>
-                                <NumberAxis label="Monto (S/)"/>
-                            </yAxis>
-                        </BarChart>
-
-                        <Separator/>
-                        <Label text="Clientes frecuentes" style="-fx-font-weight: bold;"/>
-                        <ListView fx:id="listaClientesFrecuentes" prefHeight="120"/>
-
-                        <Separator/>
-                        <Label text="Tendencias mensuales" style="-fx-font-weight: bold;"/>
-                        <LineChart fx:id="lineTendencias" prefHeight="220">
-                            <xAxis>
-                                <CategoryAxis label="Mes"/>
-                            </xAxis>
-                            <yAxis>
-                                <NumberAxis label="Alquileres"/>
-                            </yAxis>
-                        </LineChart>
+                        <!-- Panel Reportes -->
+                    <VBox fx:id="reportesPane" spacing="8" visible="false" managed="false" styleClass="card" fillWidth="true" maxWidth="Infinity">
+                            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                            <Label text="Reportes"/>
+                            <Label fx:id="lblEnCurso" text="En curso: -"/>
+                            <Label fx:id="lblFinalizados" text="Finalizados: -"/>
+                            <Separator/>
+                            <Button text="Recursos en Mantenimiento" onAction="#onRecursosMantenimiento" styleClass="secondary-btn"/>
+                            <ListView fx:id="listaMantenimiento" prefHeight="120"/>
+                            <Separator/>
+                            <GridPane hgap="8" vgap="8">
+                                <Label text="Período" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <DatePicker fx:id="desdePicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <DatePicker fx:id="hastaPicker" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                <Button text="Aplicar" onAction="#onAplicarPeriodo" GridPane.rowIndex="0" GridPane.columnIndex="3" styleClass="secondary-btn"/>
+                            </GridPane>
+                            <Label text="Recurso más alquilado"/>
+                            <Label fx:id="lblMasAlquilado"/>
+                            <Separator/>
+                            <Label text="Montos generados por tipo"/>
+                            <HBox spacing="8">
+                                <Button text="Calcular" onAction="#onMontosGenerados" styleClass="secondary-btn"/>
+                                <Button text="Exportar CSV" onAction="#onExportarMontosCSV" styleClass="secondary-btn"/>
+                                <MenuButton text="Exportar" styleClass="secondary-btn">
+                                    <items>
+                                        <MenuItem text="Exportar a PDF" onAction="#onExportarPDF"/>
+                                        <MenuItem text="Exportar a Excel (.xlsx)" onAction="#onExportarExcel"/>
+                                    </items>
+                                </MenuButton>
+                            </HBox>
+                            <BarChart fx:id="barMontos" prefHeight="220">
+                                <xAxis>
+                                    <CategoryAxis label="Tipo de Recurso"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Monto (S/)"/>
+                                </yAxis>
+                            </BarChart>
+                            <Separator/>
+                            <Label text="Clientes frecuentes"/>
+                            <ListView fx:id="listaClientesFrecuentes" prefHeight="120"/>
+                            <HBox spacing="8">
+                                <ProgressIndicator fx:id="exportProgress" visible="false" managed="false"/>
+                                <Label fx:id="exportStatus"/>
+                            </HBox>
+                            <Separator/>
+                            <Label text="Tendencias mensuales"/>
+                            <LineChart fx:id="lineTendencias" prefHeight="220">
+                                <xAxis>
+                                    <CategoryAxis label="Mes"/>
+                                </xAxis>
+                                <yAxis>
+                                    <NumberAxis label="Alquileres"/>
+                                </yAxis>
+                            </LineChart>
                     </VBox>
                 </StackPane>
-            </items>
-        </SplitPane>
+            </content>
+        </ScrollPane>
     </center>
 </BorderPane>

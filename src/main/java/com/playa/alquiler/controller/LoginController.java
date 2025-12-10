@@ -122,7 +122,9 @@ public class LoginController {
         Parent root = FXMLLoader.load(getClass().getResource(fxml));
         Stage stage = new Stage();
         stage.setTitle(titulo);
-        stage.setScene(new Scene(root));
+        Scene scene = new Scene(root);
+        com.playa.alquiler.style.ThemeManager.applyLight(scene);
+        stage.setScene(scene);
         stage.show();
     }
 

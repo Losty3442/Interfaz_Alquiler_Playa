@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.playa.alquiler.controller.MainController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
+            fx:controller="com.playa.alquiler.controller.MainController" styleClass="app-root">
     <top>
         <Label text="Sistema de Alquiler de Equipos de Playa" styleClass="title" />
     </top>

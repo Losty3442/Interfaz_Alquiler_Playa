@@ -2,7 +2,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.VendorController" styleClass="app-root" stylesheets="@/com/playa/alquiler/style/app.css">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.playa.alquiler.controller.VendorController" styleClass="app-root">
     <top>
         <HBox spacing="10" styleClass="top-bar">
             <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>

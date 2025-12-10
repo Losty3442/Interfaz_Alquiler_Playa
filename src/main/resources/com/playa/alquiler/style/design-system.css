@@ -1,0 +1,29 @@
+.app-root { -fx-font-family: "Segoe UI", "Arial", "Helvetica"; }
+.top-bar { -fx-padding: 12; -fx-spacing: 10; -fx-background-color: white; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0; }
+.card { -fx-background-radius: 16; -fx-padding: 16; -fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(17,24,39,0.06), 12, 0, 0, 4); }
+.title { -fx-font-size: 28px; -fx-font-weight: 700; -fx-text-fill: #6D28D9; }
+.button { -fx-background-radius: 12; -fx-padding: 8 14; -fx-border-radius: 12; }
+.primary-btn { -fx-text-fill: white; }
+.secondary-btn { -fx-text-fill: white; }
+.danger-btn { -fx-text-fill: white; }
+.outline-btn { -fx-background-color: transparent; }
+.ghost-btn { -fx-background-color: transparent; }
+.icon-btn { -fx-background-color: transparent; -fx-padding: 6 10; -fx-background-radius: 10; -fx-border-radius: 10; }
+.text-field, .password-field, .combo-box, .date-picker { -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 6 10; }
+.text-field:focused, .password-field:focused, .combo-box:focused, .date-picker:focused { -fx-border-width: 2; -fx-border-color: #8B5CF6; }
+.table-view { -fx-background-color: transparent; }
+.table-view .column-header-background { -fx-background-insets: 0; }
+.table-view .table-row-cell:selected { -fx-background-insets: 0; }
+.chip { -fx-background-radius: 12; -fx-padding: 2 8; -fx-font-size: 12px; }
+.chip-success { -fx-text-fill: white; }
+.chip-warning { -fx-text-fill: black; }
+.chip-danger { -fx-text-fill: white; }
+.sidebar { -fx-padding: 12; -fx-spacing: 10; }
+.sidebar .button { -fx-background-radius: 10; }
+.sidebar .button:focused { -fx-border-width: 2; -fx-border-color: #8B5CF6; }
+.hero-image { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4); }
+.metric-card { -fx-background-color: #F9FAFB; }
+.metric-students { -fx-background-color: #EDE9FE; }
+.metric-teachers { -fx-background-color: #DBEAFE; }
+.metric-parents { -fx-background-color: #FEF3C7; }
+.metric-earnings { -fx-background-color: #D1FAE5; }

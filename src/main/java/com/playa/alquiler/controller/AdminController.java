@@ -76,6 +76,19 @@ public class AdminController {
     @FXML private javafx.scene.chart.BarChart<String, Number> barMontos;
     @FXML private javafx.scene.chart.LineChart<String, Number> lineTendencias;
     @FXML private javafx.scene.control.ListView<String> listaClientesFrecuentes;
+    @FXML private javafx.scene.control.ProgressIndicator exportProgress;
+    @FXML private javafx.scene.control.Label exportStatus;
+
+    // Dashboard nuevos elementos
+    @FXML private javafx.scene.control.Label metricStudents;
+    @FXML private javafx.scene.control.Label metricTeachers;
+    @FXML private javafx.scene.control.Label metricParents;
+    @FXML private javafx.scene.control.Label metricEarnings;
+    @FXML private javafx.scene.chart.BarChart<String, Number> examResultsBar;
+    @FXML private javafx.scene.chart.PieChart genderPie;
+    @FXML private javafx.scene.control.ListView<String> dashboardNotifications;
+    @FXML private javafx.scene.layout.VBox dashboardPane;
+    @FXML private javafx.scene.layout.StackPane contenidoStack;
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final RolDAO rolDAO = new RolDAO();
@@ -181,7 +194,96 @@ public class AdminController {
         }
 
         recargarUsuarios();
+        switchTo(dashboardPane);
+
+        // Métricas del dashboard
+        try {
+            int enCurso = new AlquilerDAO().contarPorEstado("En Curso");
+            if (metricStudents != null) metricStudents.setText(String.valueOf(enCurso));
+        } catch (SQLException ignored) {}
+        try {
+            int finalizados = new AlquilerDAO().contarPorEstado("Finalizado");
+            if (metricTeachers != null) metricTeachers.setText(String.valueOf(finalizados));
+        } catch (SQLException ignored) {}
+        try {
+            int disponibles = new com.playa.alquiler.dao.RecursoDAO().buscarRecursosDisponibles().size();
+            if (metricParents != null) metricParents.setText(String.valueOf(disponibles));
+        } catch (SQLException ignored) {}
+        try {
+            java.time.LocalDate h = java.time.LocalDate.now();
+            java.time.LocalDate d = h.minusDays(30);
+            java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+            try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT COALESCE(SUM(total_a_pagar),0) FROM detalle_alquiler d JOIN Alquileres a ON a.alquiler_id=d.alquiler_id WHERE a.fecha BETWEEN ? AND ?")) {
+                ps.setDate(1, java.sql.Date.valueOf(d));
+                ps.setDate(2, java.sql.Date.valueOf(h));
+                try (java.sql.ResultSet rs = ps.executeQuery()) { if (rs.next()) total = rs.getBigDecimal(1); }
+            }
+            if (metricEarnings != null) metricEarnings.setText("S/" + total);
+        } catch (Exception ignored) {}
+
+        // Gráfico de tendencias simple en barra
+        try {
+            if (examResultsBar != null) {
+                examResultsBar.getData().clear();
+                java.time.LocalDate h = java.time.LocalDate.now();
+                java.time.LocalDate d = h.minusMonths(6);
+                java.util.Map<String, Integer> datos = new java.util.LinkedHashMap<>();
+                try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT FORMAT(a.fecha,'yyyy-MM') AS mes, COUNT(*) AS c FROM Alquileres a WHERE a.fecha BETWEEN ? AND ? GROUP BY FORMAT(a.fecha,'yyyy-MM') ORDER BY mes")) {
+                    ps.setDate(1, java.sql.Date.valueOf(d));
+                    ps.setDate(2, java.sql.Date.valueOf(h));
+                    try (java.sql.ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) datos.put(rs.getString(1), rs.getInt(2));
+                    }
+                }
+                javafx.scene.chart.XYChart.Series<String, Number> s = new javafx.scene.chart.XYChart.Series<>();
+                for (var e : datos.entrySet()) s.getData().add(new javafx.scene.chart.XYChart.Data<>(e.getKey(), e.getValue()));
+                examResultsBar.getData().add(s);
+                examResultsBar.setLegendVisible(false);
+            }
+        } catch (Exception ignored) {}
+
+        // Pie de estado de recursos
+        if (genderPie != null) {
+            try {
+                var rdao = new com.playa.alquiler.dao.RecursoDAO();
+                int disp = rdao.buscarRecursosDisponibles().size();
+                int mant;
+                try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM Recursos WHERE estado='En Mantenimiento'")) {
+                    try (java.sql.ResultSet rs = ps.executeQuery()) { rs.next(); mant = rs.getInt(1); }
+                }
+                int alquilados;
+                try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection(); java.sql.PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM Recursos WHERE estado='Alquilado'")) {
+                    try (java.sql.ResultSet rs = ps.executeQuery()) { rs.next(); alquilados = rs.getInt(1); }
+                }
+                genderPie.getData().setAll(
+                        new javafx.scene.chart.PieChart.Data("Disponible", disp),
+                        new javafx.scene.chart.PieChart.Data("Mantenimiento", mant),
+                        new javafx.scene.chart.PieChart.Data("Alquilado", alquilados)
+                );
+                genderPie.setLegendVisible(false);
+                genderPie.setLabelsVisible(true);
+            } catch (Exception ignored) {}
+        }
+
+        // Notificaciones de ejemplo
+        if (dashboardNotifications != null) {
+            dashboardNotifications.setItems(FXCollections.observableArrayList(
+                    "Nuevo recurso agregado",
+                    "Tarifa actualizada",
+                    "Promoción creada",
+                    "Reporte mensual disponible"
+            ));
+        }
     }
+
+    
+
+    private void switchTo(javafx.scene.Node target) {
+        if (contenidoStack == null || target == null) return;
+        for (javafx.scene.Node child : contenidoStack.getChildren()) { child.setVisible(false); child.setManaged(false); }
+        target.setVisible(true); target.setManaged(true);
+    }
+    @FXML public void mostrarDashboard() { switchTo(dashboardPane); }
 
     private void recargarUsuarios() {
         try {
@@ -202,19 +304,13 @@ public class AdminController {
 
     @FXML
     public void mostrarGestionUsuarios(ActionEvent e) {
-        usuariosPane.setVisible(true); usuariosPane.setManaged(true);
-        promocionesPane.setVisible(false); promocionesPane.setManaged(false);
-        tarifasPane.setVisible(false); tarifasPane.setManaged(false);
-        reportesPane.setVisible(false); reportesPane.setManaged(false);
+        switchTo(usuariosPane);
         recargarUsuarios();
     }
 
     @FXML
     public void mostrarGestionPromociones(ActionEvent e) {
-        usuariosPane.setVisible(false); usuariosPane.setManaged(false);
-        promocionesPane.setVisible(true); promocionesPane.setManaged(true);
-        tarifasPane.setVisible(false); tarifasPane.setManaged(false);
-        reportesPane.setVisible(false); reportesPane.setManaged(false);
+        switchTo(promocionesPane);
         recargarPromociones();
     }
 
@@ -225,11 +321,7 @@ public class AdminController {
 
     @FXML
     public void mostrarReportes(ActionEvent e) {
-        usuariosPane.setVisible(false); usuariosPane.setManaged(false);
-        promocionesPane.setVisible(false); promocionesPane.setManaged(false);
-        tarifasPane.setVisible(false); tarifasPane.setManaged(false);
-        recursosPane.setVisible(false); recursosPane.setManaged(false);
-        reportesPane.setVisible(true); reportesPane.setManaged(true);
+        switchTo(reportesPane);
         try {
             AlquilerDAO adao = new AlquilerDAO();
             int enCurso = adao.contarPorEstado("En Curso");
@@ -248,11 +340,7 @@ public class AdminController {
 
     @FXML
     public void mostrarGestionRecursos(ActionEvent e) {
-        usuariosPane.setVisible(false); usuariosPane.setManaged(false);
-        promocionesPane.setVisible(false); promocionesPane.setManaged(false);
-        tarifasPane.setVisible(false); tarifasPane.setManaged(false);
-        reportesPane.setVisible(false); reportesPane.setManaged(false);
-        recursosPane.setVisible(true); recursosPane.setManaged(true);
+        switchTo(recursosPane);
         recargarRecursos();
     }
 
@@ -677,6 +765,184 @@ public class AdminController {
             ((Stage) currentUserLabel.getScene().getWindow()).close();
         } catch (Exception ex) {
             estadoAdminLabel.setText("Error cerrando sesión: " + ex.getMessage());
+        }
+    }
+    @FXML
+    public void onExportarPDF(ActionEvent e) {
+        try {
+            if (exportProgress != null) { exportProgress.setVisible(true); exportProgress.setManaged(true); }
+            if (exportStatus != null) { exportStatus.setText("Exportando PDF..."); }
+            javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
+            fc.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("PDF", "*.pdf"));
+            fc.setInitialFileName("reporte_" + java.time.LocalDate.now() + ".pdf");
+            java.io.File file = fc.showSaveDialog(currentUserLabel.getScene().getWindow());
+            if (file == null) { if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); } return; }
+            org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument();
+            try {
+                org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER);
+                doc.addPage(page);
+                org.apache.pdfbox.pdmodel.PDPageContentStream cs = new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page);
+                float margin = 36f;
+                float y = page.getMediaBox().getHeight() - margin;
+                cs.beginText();
+                cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 16);
+                cs.newLineAtOffset(margin, y - 20);
+                cs.showText("Reportes operativos y de gestión");
+                cs.endText();
+                y -= 40;
+                cs.beginText();
+                cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA, 11);
+                cs.newLineAtOffset(margin, y);
+                String periodo = "Período: " + (desdePicker != null ? String.valueOf(desdePicker.getValue()) : "-") + " a " + (hastaPicker != null ? String.valueOf(hastaPicker.getValue()) : "-");
+                cs.showText(periodo);
+                cs.endText();
+                y -= 24;
+                cs.beginText();
+                cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 12);
+                cs.newLineAtOffset(margin, y);
+                cs.showText("Montos por tipo");
+                cs.endText();
+                y -= 18;
+                if (barMontos != null && !barMontos.getData().isEmpty()) {
+                    javafx.scene.chart.XYChart.Series<String, Number> s = barMontos.getData().get(0);
+                    for (var d : s.getData()) {
+                        cs.beginText();
+                        cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA, 11);
+                        cs.newLineAtOffset(margin, y);
+                        cs.showText(d.getXValue() + ": " + d.getYValue());
+                        cs.endText();
+                        y -= 16;
+                    }
+                }
+                y -= 10;
+                cs.beginText();
+                cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 12);
+                cs.newLineAtOffset(margin, y);
+                cs.showText("Clientes frecuentes");
+                cs.endText();
+                y -= 18;
+                if (listaClientesFrecuentes != null && listaClientesFrecuentes.getItems() != null) {
+                    for (String item : listaClientesFrecuentes.getItems()) {
+                        cs.beginText();
+                        cs.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA, 11);
+                        cs.newLineAtOffset(margin, y);
+                        cs.showText(item);
+                        cs.endText();
+                        y -= 16;
+                    }
+                }
+                if (y < 160) {
+                    cs.close();
+                    page = new org.apache.pdfbox.pdmodel.PDPage(org.apache.pdfbox.pdmodel.common.PDRectangle.LETTER);
+                    doc.addPage(page);
+                    cs = new org.apache.pdfbox.pdmodel.PDPageContentStream(doc, page);
+                    y = page.getMediaBox().getHeight() - margin;
+                }
+                if (barMontos != null) {
+                    javafx.scene.SnapshotParameters sp = new javafx.scene.SnapshotParameters();
+                    javafx.scene.image.WritableImage wi = new javafx.scene.image.WritableImage(800, 360);
+                    javafx.scene.image.WritableImage snap = barMontos.snapshot(sp, wi);
+                    java.awt.image.BufferedImage bi = javafx.embed.swing.SwingFXUtils.fromFXImage(snap, null);
+                    org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject img = org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory.createFromImage(doc, bi);
+                    float imgW = 520f;
+                    float ratio = img.getWidth() / img.getHeight();
+                    float imgH = imgW / ratio;
+                    cs.drawImage(img, margin, y - imgH - 20, imgW, imgH);
+                    y -= imgH + 40;
+                }
+                cs.close();
+                doc.save(file);
+                if (exportStatus != null) { exportStatus.setText("PDF exportado: " + file.getAbsolutePath()); }
+            } finally {
+                doc.close();
+                if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); }
+            }
+        } catch (Exception ex) {
+            if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); }
+            if (exportStatus != null) { exportStatus.setText("Error exportando PDF: " + ex.getMessage()); }
+            estadoAdminLabel.setText("Error exportando PDF: " + ex.getMessage());
+        }
+    }
+
+    @FXML
+    public void onExportarExcel(ActionEvent e) {
+        try {
+            if (exportProgress != null) { exportProgress.setVisible(true); exportProgress.setManaged(true); }
+            if (exportStatus != null) { exportStatus.setText("Exportando Excel..."); }
+            javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
+            fc.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Excel (*.xlsx)", "*.xlsx"));
+            fc.setInitialFileName("reporte_" + java.time.LocalDate.now() + ".xlsx");
+            java.io.File file = fc.showSaveDialog(currentUserLabel.getScene().getWindow());
+            if (file == null) { if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); } return; }
+            org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+            try {
+                org.apache.poi.ss.usermodel.CellStyle header = wb.createCellStyle();
+                org.apache.poi.ss.usermodel.Font hf = wb.createFont();
+                hf.setBold(true);
+                header.setFont(hf);
+                org.apache.poi.ss.usermodel.CellStyle money = wb.createCellStyle();
+                org.apache.poi.ss.usermodel.DataFormat df = wb.createDataFormat();
+                money.setDataFormat(df.getFormat("#,##0.00"));
+                var shResumen = wb.createSheet("Resumen");
+                var r0 = shResumen.createRow(0);
+                r0.createCell(0).setCellValue("Reportes operativos y de gestión");
+                r0.getCell(0).setCellStyle(header);
+                var r1 = shResumen.createRow(1);
+                r1.createCell(0).setCellValue("Generado: " + java.time.LocalDateTime.now());
+                var r2 = shResumen.createRow(2);
+                r2.createCell(0).setCellValue("Período: " + (desdePicker != null ? String.valueOf(desdePicker.getValue()) : "-") + " a " + (hastaPicker != null ? String.valueOf(hastaPicker.getValue()) : "-"));
+                var shMontos = wb.createSheet("MontosPorTipo");
+                var hr = shMontos.createRow(0);
+                hr.createCell(0).setCellValue("Tipo");
+                hr.createCell(1).setCellValue("Monto");
+                hr.getCell(0).setCellStyle(header);
+                hr.getCell(1).setCellStyle(header);
+                int i = 1;
+                if (barMontos != null && !barMontos.getData().isEmpty()) {
+                    var s = barMontos.getData().get(0);
+                    for (var d : s.getData()) {
+                        var row = shMontos.createRow(i++);
+                        row.createCell(0).setCellValue(d.getXValue());
+                        var c = row.createCell(1);
+                        c.setCellValue(d.getYValue().doubleValue());
+                        c.setCellStyle(money);
+                    }
+                }
+                shMontos.autoSizeColumn(0); shMontos.autoSizeColumn(1);
+                var shClientes = wb.createSheet("ClientesFrecuentes");
+                var hc = shClientes.createRow(0);
+                hc.createCell(0).setCellValue("Cliente (veces)");
+                hc.getCell(0).setCellStyle(header);
+                int j = 1;
+                if (listaClientesFrecuentes != null && listaClientesFrecuentes.getItems() != null) {
+                    for (String item : listaClientesFrecuentes.getItems()) {
+                        var row = shClientes.createRow(j++);
+                        row.createCell(0).setCellValue(item);
+                    }
+                }
+                shClientes.autoSizeColumn(0);
+                var shMant = wb.createSheet("Mantenimiento");
+                var hm = shMant.createRow(0);
+                hm.createCell(0).setCellValue("Recursos");
+                hm.getCell(0).setCellStyle(header);
+                int k = 1;
+                if (listaMantenimiento != null && listaMantenimiento.getItems() != null) {
+                    for (String item : listaMantenimiento.getItems()) {
+                        var row = shMant.createRow(k++);
+                        row.createCell(0).setCellValue(item);
+                    }
+                }
+                shMant.autoSizeColumn(0);
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) { wb.write(fos); }
+                if (exportStatus != null) { exportStatus.setText("Excel exportado: " + file.getAbsolutePath()); }
+            } finally {
+                wb.close();
+                if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); }
+            }
+        } catch (Exception ex) {
+            if (exportProgress != null) { exportProgress.setVisible(false); exportProgress.setManaged(false); }
+            if (exportStatus != null) { exportStatus.setText("Error exportando Excel: " + ex.getMessage()); }
+            estadoAdminLabel.setText("Error exportando Excel: " + ex.getMessage());
         }
     }
 }

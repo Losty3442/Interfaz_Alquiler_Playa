@@ -1,0 +1,29 @@
+.app-root { -fx-background-color: #F3E8FF; }
+.top-bar .label { -fx-text-fill: #111827; }
+.title { -fx-text-fill: #7C3AED; }
+.button { -fx-text-fill: #111827; }
+.primary-btn { -fx-background-color: #8B5CF6; }
+.primary-btn:hover { -fx-background-color: #7C3AED; }
+.secondary-btn { -fx-background-color: #60A5FA; }
+.secondary-btn:hover { -fx-background-color: #3B82F6; }
+.danger-btn { -fx-background-color: #EF4444; }
+.danger-btn:hover { -fx-background-color: #DC2626; }
+.outline-btn { -fx-border-color: #D1D5DB; -fx-text-fill: #1F2937; }
+.ghost-btn { -fx-text-fill: #1F2937; }
+.icon-btn { -fx-text-fill: #1F2937; }
+.icon-btn:hover { -fx-background-color: rgba(0,0,0,0.06); }
+.text-field, .password-field, .combo-box, .date-picker { -fx-border-color: #D1D5DB; }
+.text-field:focused, .password-field:focused, .combo-box:focused, .date-picker:focused { -fx-border-color: #8B5CF6; }
+.table-view .column-header-background { -fx-background-color: #F3F4F6; }
+.table-view .table-row-cell:selected { -fx-background-color: #EDE9FE; }
+.chip-success { -fx-background-color: #10B981; }
+.chip-warning { -fx-background-color: #F59E0B; }
+.chip-danger { -fx-background-color: #EF4444; }
+.default-color0.chart-bar { -fx-bar-fill: #8B5CF6; }
+.default-color1.chart-bar { -fx-bar-fill: #3B82F6; }
+.default-color2.chart-bar { -fx-bar-fill: #F59E0B; }
+.default-color3.chart-bar { -fx-bar-fill: #10B981; }
+.default-color4.chart-bar { -fx-bar-fill: #EF4444; }
+.default-color0.chart-pie { -fx-pie-color: #8B5CF6; }
+.default-color1.chart-pie { -fx-pie-color: #F59E0B; }
+.chart-legend { -fx-background-color: transparent; }
