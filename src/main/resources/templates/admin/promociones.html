@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Promociones - Admin')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fa-solid fa-tags"></i> Gestión de Promociones</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">
+                <i class="fa-solid fa-plus"></i> Nueva Promoción
+            </button>
+        </div>
+
+        <!-- Admin Navigation Placeholder (Could be better as a fragment) -->
+        <div th:replace="~{fragments/layout :: admin-nav}"></div>
+
+        <div th:if="${param.success}" class="alert alert-success">Promoción guardada.</div>
+        <div th:if="${param.deleted}" class="alert alert-warning">Promoción eliminada.</div>
+
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descuento</th>
+                            <th>Tipo</th>
+                            <th>Duración</th>
+                            <th>Condición</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${promociones}">
+                            <td th:text="${p.nombrePromocion}">Promo</td>
+                            <td th:text="${p.valorDescuento}">10%</td>
+                            <td th:text="${p.tipoDescuento}">Porcentual</td>
+                            <td th:text="${p.duracionPromocion}">30 días</td>
+                            <td th:text="${p.condicionMinima}">Ninguna</td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${p.estado == 'Activa' ? 'bg-success' : 'bg-secondary'}"
+                                    th:text="${p.estado}">Activa</span>
+                            </td>
+                            <td>
+                                <form th:action="@{/admin/promociones/eliminar/{id}(id=${p.idPromocion})}" method="post"
+                                    onsubmit="return confirm('Eliminar?');">
+                                    <button class="btn btn-sm btn-outline-danger"><i
+                                            class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="promoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/promociones/guardar}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Nueva Promoción</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" name="nombrePromocion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="descripcion"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Tipo Desc.</label>
+                                <select class="form-select" name="tipoDescuento">
+                                    <option value="Porcentaje">Porcentaje</option>
+                                    <option value="Fijo">Fijo</option>
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Valor</label>
+                                <input type="number" step="0.01" class="form-control" name="valorDescuento" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Duración</label>
+                            <input type="text" class="form-control" name="duracionPromocion" placeholder="Ej: 30 días">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Condición Mínima</label>
+                            <input type="text" class="form-control" name="condicionMinima"
+                                placeholder="Ej: Alquiler > 2h">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="estado">
+                                <option value="Activa">Activa</option>
+                                <option value="Inactiva">Inactiva</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+
+</html>

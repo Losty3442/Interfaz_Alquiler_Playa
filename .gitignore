@@ -1,16 +1,20 @@
+# Maven
 target/
-out/
-release/
-*.class
 *.log
-*.tmp
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
-Desktop.ini
+
+# IDEs
 .idea/
 .vscode/
 *.iml
-.trae/
+.DS_Store
+.classpath
+.project
+.settings/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Secrets (IMPORTANT)
 src/main/resources/db.properties
+.env

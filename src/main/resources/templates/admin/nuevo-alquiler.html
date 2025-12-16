@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Nuevo Alquiler - Admin')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <h2 class="mb-4">Nuevo Alquiler (Admin)</h2>
+
+        <!-- Admin Nav -->
+        <div th:replace="~{fragments/layout :: admin-nav}"></div>
+
+        <div th:if="${mensaje}" class="alert alert-info mt-3" th:text="${mensaje}"></div>
+        <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
+
+        <div class="row mt-4">
+            <!-- Columna Izq: Datos Turista -->
+            <div class="col-md-5">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">1. Datos del Cliente</div>
+                    <div class="card-body">
+                        <!-- Buscador -->
+                        <form th:action="@{/admin/buscar-turista}" method="post" class="input-group mb-3">
+                            <input type="text" class="form-control" name="dni" placeholder="Email o Teléfono" required>
+                            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                        </form>
+
+                        <hr>
+
+                        <!-- Formulario Datos (se envía al final) -->
+                        <form id="rentalForm" th:action="@{/admin/procesar-alquiler}" method="post">
+                            <input type="hidden" name="idTurista" th:value="${turistaEncontrado?.idTurista}">
+
+                            <div class="mb-3">
+                                <label class="form-label">Nombres</label>
+                                <input type="text" class="form-control" name="nombres"
+                                    th:value="${turistaEncontrado?.nombres}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" name="apellidos"
+                                    th:value="${turistaEncontrado?.apellidos}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email"
+                                    th:value="${turistaEncontrado?.email ?: nuevoTuristaDato}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" name="telefono"
+                                    th:value="${turistaEncontrado?.telefono}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nacionalidad</label>
+                                <input type="text" class="form-control" name="nacionalidad"
+                                    th:value="${turistaEncontrado?.nacionalidad ?: 'Peruana'}" required>
+                            </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Der: Recursos y Confirmación -->
+            <div class="col-md-7">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-success text-white">2. Selección de Recursos</div>
+                    <div class="card-body">
+
+                        <!-- Reservation Configuration -->
+                        <div class="mb-3 p-3 bg-light rounded border">
+                            <label class="form-label fw-bold">Configuración de Reserva</label>
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-6">
+                                    <label class="small text-muted">Hora Inicio (Reserva)</label>
+                                    <input type="time" class="form-control" name="horaInicioReserva"
+                                        id="horaInicioInput" onchange="updateTimeRange()">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small text-muted">Rango Estimado</label>
+                                    <input type="text" class="form-control-plaintext" id="timeRangeDisplay"
+                                        value="-- : --" readonly>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="pagadoCheck" id="pagadoCheck">
+                                <label class="form-check-label" for="pagadoCheck">
+                                    Marcar como <strong>PAGADO</strong> ahora mismo
+                                </label>
+                            </div>
+                        </div>
+
+                        <label class="form-label fw-bold">Recursos Disponibles:</label>
+                        <div class="list-group">
+                            <label class="list-group-item d-flex gap-3 align-items-center"
+                                th:each="r : ${recursosDisponibles}">
+                                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                    <input class="form-check-input flex-shrink-0 resource-check" type="checkbox"
+                                        name="idsRecurso" th:value="${r.idRecurso}" th:data-price="${r.tarifa}"
+                                        onchange="toggleDuration(this)">
+                                    <div>
+                                        <strong><span th:text="${r.nombreRecurso}">Nombre</span> <span
+                                                class="badge bg-secondary" th:text="${r.unidades} + ' disp.'">10
+                                                disp.</span></strong>
+                                        <small class="text-muted d-block" th:text="${r.descripcion}">Desc</small>
+                                        <span class="badge bg-primary rounded-pill">S/ <span
+                                                th:text="${r.tarifa}">0.00</span>/h</span>
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div class="input-group input-group-sm" style="width: 120px;">
+                                        <span class="input-group-text"><i class="fa-solid fa-clock"></i></span>
+                                        <input type="number" class="form-control duration-input"
+                                            th:name="'horas_' + ${r.idRecurso}" value="1" min="1" max="12" disabled
+                                            onchange="updateTotal()" oninput="updateTotal()">
+                                    </div>
+                                </div>
+                            </label>
+                            <div th:if="${#lists.isEmpty(recursosDisponibles)}" class="text-danger">
+                                No hay recursos disponibles en este momento.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <h4 class="mb-0 text-success fw-bold">Total: <span id="totalPrice">S/ 0.00</span></h4>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+                            <a href="/admin/historial" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" name="accion" value="reservar"
+                                class="btn btn-outline-success btn-lg">Reservar</button>
+                            <button type="submit" name="accion" value="alquilar" class="btn btn-success btn-lg">Nuevo
+                                Alquiler</button>
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function toggleDuration(checkbox) {
+            const row = checkbox.closest('.list-group-item');
+            const input = row.querySelector('.duration-input');
+            input.disabled = !checkbox.checked;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0;
+            const checkboxes = document.querySelectorAll('.resource-check:checked');
+            let maxHours = 0;
+
+            checkboxes.forEach(cb => {
+                const price = parseFloat(cb.getAttribute('data-price')) || 0;
+                const row = cb.closest('.list-group-item');
+                const hoursInput = row.querySelector('.duration-input');
+                const hours = parseInt(hoursInput.value) || 1;
+
+                if (hours > maxHours) maxHours = hours;
+
+                total += price * hours;
+            });
+
+            document.getElementById('totalPrice').innerText = 'S/ ' + total.toFixed(2);
+            updateTimeRange(maxHours);
+        }
+
+        function updateTimeRange(hoursOverride) {
+            const timeInput = document.getElementById('horaInicioInput');
+            const rangeDisplay = document.getElementById('timeRangeDisplay');
+
+            if (!timeInput.value) {
+                rangeDisplay.value = "-- : --";
+                return;
+            }
+
+            // Get hours from max selected or default 1
+            let duration = 1;
+            if (typeof hoursOverride === 'number') {
+                duration = hoursOverride;
+            } else {
+                const checkboxes = document.querySelectorAll('.resource-check:checked');
+                checkboxes.forEach(cb => {
+                    const row = cb.closest('.list-group-item');
+                    const hoursInput = row.querySelector('.duration-input');
+                    const h = parseInt(hoursInput.value) || 1;
+                    if (h > duration) duration = h;
+                });
+            }
+            if (duration === 0) duration = 1;
+
+            const [h, m] = timeInput.value.split(':').map(Number);
+            const start = new Date();
+            start.setHours(h, m, 0, 0);
+
+            const end = new Date(start);
+            end.setHours(start.getHours() + duration);
+
+            const format = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            rangeDisplay.value = `${format(start)} - ${format(end)}`;
+        }
+    </script>
+</body>
+
+</html>

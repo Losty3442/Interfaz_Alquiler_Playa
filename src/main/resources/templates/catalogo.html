@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Catálogo - Alquiler Playa')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+    <div style="height: 100px;"></div>
+
+    <div class="container py-5">
+        <div class="text-center mb-5 fade-in-stagger">
+            <h2 class="display-5 fw-bold">Nuestros Recursos</h2>
+            <p class="text-muted lead">Encuentra el equipamiento perfecto para tu día de playa.</p>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-5 fade-in-stagger" style="animation-delay: 0.1s">
+                <div class="filter-sidebar">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="mb-0">Filtros</h4>
+                        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+
+                    <div class="collapse d-lg-block" id="filterCollapse">
+                        <div class="filter-group">
+                            <span class="filter-title">Categoría</span>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" value="" id="cat1" />
+                                <label class="form-check-label" for="cat1">Sombrillas</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="cat2" />
+                                <label class="form-check-label" for="cat2">Sillas</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="cat3" />
+                                <label class="form-check-label" for="cat3">Sets Completos</label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-title">Precio / Hora</span>
+                            <input type="range" class="form-range mt-2" min="0" max="100" id="priceRange" />
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span>S/ 0</span>
+                                <span>S/ 100</span>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="filter-title">Disponibilidad</span>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" checked="checked" />
+                                <label class="form-check-label">Solo disponibles</label>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary-pro w-100 mt-3 btn-sm">Aplicar Filtros</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="col-lg-9">
+                <div class="alert alert-danger shadow-sm border-0" th:if="${error}" th:text="${error}"></div>
+
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                    <div class="col fade-in-stagger" th:each="r : ${recursos}">
+                        <div class="card-pro">
+                            <div class="card-img-wrapper">
+                                <div class="position-absolute top-0 end-0 m-3 z-1">
+                                    <span class="badge rounded-pill shadow-sm"
+                                        th:classappend="${r.estado == 'Disponible' ? 'bg-success' : 'bg-danger'}"
+                                        th:text="${r.estado}">Disponible</span>
+                                </div>
+                                <!-- Fallback Logic -->
+                                <img th:if="${r.imagen != null and !r.imagen.isEmpty()}" th:src="${r.imagen}"
+                                    class="card-img-top-pro" alt="Recurso" />
+                                <img th:unless="${r.imagen != null and !r.imagen.isEmpty()}" th:src="@{/img/logo.png}"
+                                    class="card-img-top-pro p-5 bg-light" alt="Recurso" style="object-fit: contain;" />
+                            </div>
+
+                            <div class="card-body-pro d-flex flex-column">
+                                <h5 class="card-title fw-bold mb-2" th:text="${r.nombreRecurso}">Sombrilla</h5>
+                                <p class="card-text text-muted small" th:text="${r.descripcion}">Descripción
+                                </p>
+
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="text-muted small">Tarifa por hora</span>
+                                        <span class="card-price">S/ <span th:text="${r.tarifa}">0.00</span></span>
+                                    </div>
+
+                                    <a href="https://wa.me/51999999999" target="_blank"
+                                        class="btn btn-primary-pro w-100 btn-sm">
+                                        <i class="fa-brands fa-whatsapp me-2"></i> Reservar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5 py-5" th:if="${recursos.isEmpty()}">
+                    <div class="text-muted opacity-50 mb-3">
+                        <i class="fa-solid fa-umbrella-beach fa-4x"></i>
+                    </div>
+                    <h4 class="text-muted">No encontramos recursos disponibles.</h4>
+                    <p class="text-muted small">Intenta ajustar los filtros de búsqueda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+
+</html>

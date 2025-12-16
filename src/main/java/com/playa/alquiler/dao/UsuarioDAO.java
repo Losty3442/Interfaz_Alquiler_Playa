@@ -2,6 +2,7 @@ package com.playa.alquiler.dao;
 
 import com.playa.alquiler.db.ConexionDB;
 import com.playa.alquiler.model.Usuario;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UsuarioDAO {
     public Usuario crear(Usuario u) throws SQLException {
         String sql = "INSERT INTO Usuario (nombre_usuario, email, contraseña, rol_id) VALUES (?,?,?,?)";

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Bienvenido - Alquiler Playa')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1 class="hero-title">Tu Lugar Perfecto <br>Frente al Mar</h1>
+            <p class="hero-subtitle">Reserva las mejores sombrillas y sillas premium. <br>Disfruta del sol con comodidad
+                y estilo.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/catalogo" class="btn btn-primary-pro btn-lg">
+                    <i class="fa-solid fa-umbrella-beach me-2"></i> Reservar Ahora
+                </a>
+                <a href="#features" class="btn btn-outline-pro btn-lg text-white border-white hover-dark">
+                    <i class="fa-solid fa-angle-down me-2"></i> Saber Más
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5 my-5">
+        <div class="container py-5">
+            <div class="text-center mb-5 fade-in-stagger" style="animation-delay: 0.2s">
+                <span class="text-accent text-uppercase fw-bold ls-2">Por qué Elegirnos</span>
+                <h2 class="display-5 mt-2">La Mejor Experiencia de Playa</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4 fade-in-stagger" style="animation-delay: 0.3s">
+                    <div class="card-pro h-100 border-0 p-4 text-center">
+                        <div class="mb-4 text-accent">
+                            <i class="fa-solid fa-gem fa-3x"></i>
+                        </div>
+                        <h4 class="mb-3">Calidad Premium</h4>
+                        <p class="text-muted">Nuestras sombrillas y sillas son de la más alta calidad, garantizando tu
+                            confort durante todo el día.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 fade-in-stagger" style="animation-delay: 0.4s">
+                    <div class="card-pro h-100 border-0 p-4 text-center">
+                        <div class="mb-4 text-accent">
+                            <i class="fa-solid fa-bolt fa-3x"></i>
+                        </div>
+                        <h4 class="mb-3">Reserva Rápida</h4>
+                        <p class="text-muted">Proceso de reserva simplificado. Asegura tu lugar en la playa en segundos
+                            desde tu móvil.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 fade-in-stagger" style="animation-delay: 0.5s">
+                    <div class="card-pro h-100 border-0 p-4 text-center">
+                        <div class="mb-4 text-accent">
+                            <i class="fa-solid fa-shield-halved fa-3x"></i>
+                        </div>
+                        <h4 class="mb-3">Seguridad Garantizada</h4>
+                        <p class="text-muted">Disfruta con tranquilidad. Nuestro staff supervisa constantemente tus
+                            pertenencias.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-5 bg-white">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="display-5">Lo que dicen nuestros clientes</h2>
+            </div>
+
+            <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="text-center w-75 mx-auto">
+                            <i class="fa-solid fa-quote-left fa-3x text-light mb-4 text-accent opacity-25"></i>
+                            <h3 class="fw-light fst-italic mb-4">"Increíble servicio. La reserva fue súper fácil y
+                                cuando llegamos todo estaba listo. Definitivamente volveremos."</h3>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <div class="bg-dark rounded-circle text-white d-flex align-items-center justify-content-center fw-bold"
+                                    style="width: 50px; height: 50px;">MC</div>
+                                <div class="text-start">
+                                    <h5 class="mb-0 fw-bold">María Castro</h5>
+                                    <small class="text-muted">Visitante Frecuente</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="text-center w-75 mx-auto">
+                            <i class="fa-solid fa-quote-left fa-3x text-light mb-4 text-accent opacity-25"></i>
+                            <h3 class="fw-light fst-italic mb-4">"Las sombrillas son enormes y protegen muy bien. El
+                                personal es muy amable. 100% recomendado."</h3>
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center fw-bold"
+                                    style="width: 50px; height: 50px;">JR</div>
+                                <div class="text-start">
+                                    <h5 class="mb-0 fw-bold">Juan Rivera</h5>
+                                    <small class="text-muted">Turista</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                    <span class="visually-hidden">Siguiente</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pre-Footer CTA -->
+    <section class="py-5 bg-dark-pro text-white text-center">
+        <div class="container py-5">
+            <h2 class="mb-4 text-white">¿Listo para un día inolvidable?</h2>
+            <p class="lead mb-5 opacity-75">No esperes a llegar a la playa. Reserva tu lugar ahora.</p>
+            <a href="/catalogo" class="btn btn-primary-pro btn-lg fs-4 px-5">Ver Catálogo Completo</a>
+        </div>
+    </section>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+
+</html>

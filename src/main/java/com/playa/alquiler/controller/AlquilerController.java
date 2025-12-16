@@ -17,29 +17,52 @@ import java.time.LocalDate;
 import com.playa.alquiler.service.CurrentSession;
 
 public class AlquilerController {
-    @FXML private TextField turistaIdField;
-    @FXML private TextField usuarioIdField;
-    @FXML private TextField turistaTelefonoField;
-    @FXML private TextField nombresField;
-    @FXML private TextField apellidosField;
-    @FXML private TextField emailField;
-    @FXML private TextField telefonoField;
-    @FXML private TextField nacionalidadField;
-    @FXML private ComboBox<Recurso> recursoCombo;
-    @FXML private TextField horasField;
-    @FXML private ComboBox<com.playa.alquiler.model.Promocion> promoCombo;
-    @FXML private TableView<DetalleAlquiler> detallesTable;
-    @FXML private TableColumn<DetalleAlquiler, Integer> colRecursoId;
-    @FXML private TableColumn<DetalleAlquiler, BigDecimal> colHoras;
-    @FXML private TableColumn<DetalleAlquiler, Integer> colPromo;
-    @FXML private Label statusLabel;
-    @FXML private TextField alquilerIdField;
-    @FXML private Label totalLabel;
-    @FXML private TableView<Alquiler> alquileresTable;
-    @FXML private TableColumn<Alquiler, Integer> colAlqId;
-    @FXML private TableColumn<Alquiler, String> colAlqEstado;
-    @FXML private ComboBox<String> estadoFiltroCombo;
-    @FXML private javafx.scene.control.ScrollPane alquilerScroll;
+    @FXML
+    private TextField turistaIdField;
+    @FXML
+    private TextField usuarioIdField;
+    @FXML
+    private TextField turistaTelefonoField;
+    @FXML
+    private TextField nombresField;
+    @FXML
+    private TextField apellidosField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private TextField telefonoField;
+    @FXML
+    private TextField nacionalidadField;
+    @FXML
+    private ComboBox<Recurso> recursoCombo;
+    @FXML
+    private TextField horasField;
+    @FXML
+    private ComboBox<com.playa.alquiler.model.Promocion> promoCombo;
+    @FXML
+    private TableView<DetalleAlquiler> detallesTable;
+    @FXML
+    private TableColumn<DetalleAlquiler, Integer> colRecursoId;
+    @FXML
+    private TableColumn<DetalleAlquiler, BigDecimal> colHoras;
+    @FXML
+    private TableColumn<DetalleAlquiler, Integer> colPromo;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private TextField alquilerIdField;
+    @FXML
+    private Label totalLabel;
+    @FXML
+    private TableView<Alquiler> alquileresTable;
+    @FXML
+    private TableColumn<Alquiler, Integer> colAlqId;
+    @FXML
+    private TableColumn<Alquiler, String> colAlqEstado;
+    @FXML
+    private ComboBox<String> estadoFiltroCombo;
+    @FXML
+    private javafx.scene.control.ScrollPane alquilerScroll;
 
     private final ObservableList<DetalleAlquiler> detalles = FXCollections.observableArrayList();
 
@@ -88,7 +111,8 @@ public class AlquilerController {
         if (alquileresTable != null) {
             colAlqId.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("alquilerId"));
             colAlqEstado.setCellValueFactory(new javafx.scene.control.cell.PropertyValueFactory<>("estadoAlquiler"));
-            estadoFiltroCombo.setItems(FXCollections.observableArrayList("En Curso", "Reservado", "Finalizado", "Cancelado"));
+            estadoFiltroCombo
+                    .setItems(FXCollections.observableArrayList("En Curso", "Reservado", "Finalizado", "Cancelado"));
         }
 
         if (alquilerScroll != null) {
@@ -96,7 +120,10 @@ public class AlquilerController {
                 double v = alquilerScroll.getVvalue();
                 double speed = 0.003;
                 double next = v - e.getDeltaY() * speed;
-                if (next < 0) next = 0; else if (next > 1) next = 1;
+                if (next < 0)
+                    next = 0;
+                else if (next > 1)
+                    next = 1;
                 alquilerScroll.setVvalue(next);
                 e.consume();
             });
@@ -106,14 +133,22 @@ public class AlquilerController {
     @FXML
     public void onAddDetalle(ActionEvent event) {
         Recurso recurso = recursoCombo.getValue();
-        if (recurso == null) { showError("Seleccione un recurso disponible"); return; }
+        if (recurso == null) {
+            showError("Seleccione un recurso disponible");
+            return;
+        }
         BigDecimal horas;
         try {
             horas = new BigDecimal(horasField.getText());
-            if (horas.compareTo(BigDecimal.ZERO) <= 0) throw new NumberFormatException();
-        } catch (Exception ex) { showError("Ingrese horas válidas (> 0)"); return; }
+            if (horas.compareTo(BigDecimal.ZERO) <= 0)
+                throw new NumberFormatException();
+        } catch (Exception ex) {
+            showError("Ingrese horas válidas (> 0)");
+            return;
+        }
 
-        Integer promoId = promoCombo != null && promoCombo.getValue() != null ? promoCombo.getValue().getIdPromocion() : null;
+        Integer promoId = promoCombo != null && promoCombo.getValue() != null ? promoCombo.getValue().getIdPromocion()
+                : null;
 
         DetalleAlquiler d = new DetalleAlquiler();
         d.setRecursoId(recurso.getIdRecurso());
@@ -121,7 +156,8 @@ public class AlquilerController {
         d.setPromocionId(promoId);
         detalles.add(d);
         horasField.clear();
-        if (promoCombo != null) promoCombo.getSelectionModel().clearSelection();
+        if (promoCombo != null)
+            promoCombo.getSelectionModel().clearSelection();
         statusLabel.setText("Detalle agregado");
         recalcularTotalEstimado();
     }
@@ -137,8 +173,12 @@ public class AlquilerController {
             showError("Ingrese usuario válido o seleccione/registre turista");
             return;
         }
-        if (turistaId == null) return;
-        if (detalles.isEmpty()) { showError("Agregue al menos un detalle"); return; }
+        if (turistaId == null)
+            return;
+        if (detalles.isEmpty()) {
+            showError("Agregue al menos un detalle");
+            return;
+        }
 
         Alquiler alquiler = new Alquiler();
         alquiler.setFecha(LocalDate.now());
@@ -166,14 +206,17 @@ public class AlquilerController {
             if (turistaIdField != null && turistaIdField.getText() != null && !turistaIdField.getText().isBlank()) {
                 return Integer.parseInt(turistaIdField.getText());
             }
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
         try {
             String tel = telefonoField != null ? telefonoField.getText() : null;
             if (tel != null && !tel.isBlank()) {
                 var t = new com.playa.alquiler.dao.TuristaDAO().obtenerPorTelefono(tel);
-                if (t != null) return t.getIdTurista();
+                if (t != null)
+                    return t.getIdTurista();
             }
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         showError("Seleccione o registre un turista");
         return null;
     }
@@ -181,10 +224,16 @@ public class AlquilerController {
     @FXML
     public void onBuscarTuristaPorTelefono(ActionEvent event) {
         String telefono = turistaTelefonoField.getText();
-        if (telefono == null || telefono.isBlank()) { showError("Ingrese teléfono"); return; }
+        if (telefono == null || telefono.isBlank()) {
+            showError("Ingrese teléfono");
+            return;
+        }
         try {
             var t = new com.playa.alquiler.dao.TuristaDAO().obtenerPorTelefono(telefono);
-            if (t == null) { statusLabel.setText("No encontrado"); return; }
+            if (t == null) {
+                statusLabel.setText("No encontrado");
+                return;
+            }
             nombresField.setText(t.getNombres());
             apellidosField.setText(t.getApellidos());
             emailField.setText(t.getEmail());
@@ -205,10 +254,15 @@ public class AlquilerController {
             String email = emailField.getText();
             String tel = telefonoField.getText();
             String nac = nacionalidadField.getText();
-            if (nombres == null || nombres.isBlank() || apellidos == null || apellidos.isBlank() || email == null || email.isBlank() || tel == null || tel.isBlank()) { showError("Complete datos de turista"); return; }
+            if (nombres == null || nombres.isBlank() || apellidos == null || apellidos.isBlank() || email == null
+                    || email.isBlank() || tel == null || tel.isBlank()) {
+                showError("Complete datos de turista");
+                return;
+            }
             var dao = new com.playa.alquiler.dao.TuristaDAO();
             com.playa.alquiler.model.Turista existente = dao.obtenerPorTelefono(tel);
-            if (existente == null) existente = dao.obtenerPorEmail(email);
+            if (existente == null)
+                existente = dao.obtenerPorEmail(email);
             if (existente != null) {
                 turistaIdField.setText(String.valueOf(existente.getIdTurista()));
                 nombresField.setText(existente.getNombres());
@@ -236,26 +290,33 @@ public class AlquilerController {
     private void recalcularTotalEstimado() {
         try {
             java.math.BigDecimal total = java.math.BigDecimal.ZERO;
-            var tarifaDAO = new com.playa.alquiler.dao.TarifaRecursoDAO();
+            var recursoDAO = new com.playa.alquiler.dao.RecursoDAO();
             var promoDAO = new com.playa.alquiler.dao.PromocionDAO();
             for (DetalleAlquiler d : detalles) {
-                var tarifa = tarifaDAO.obtenerUltimaTarifa(d.getRecursoId());
-                if (tarifa == null) continue;
-                java.math.BigDecimal base = tarifa.getPrecioPorHora().multiply(d.getCantidadHoras());
+                var recurso = recursoDAO.obtenerPorId(d.getRecursoId());
+                if (recurso == null || recurso.getTarifa() == null)
+                    continue;
+                java.math.BigDecimal base = recurso.getTarifa().multiply(d.getCantidadHoras());
                 com.playa.alquiler.model.Promocion promo = null;
-                if (d.getPromocionId() != null) promo = promoDAO.obtenerActivaPorId(d.getPromocionId(), java.time.LocalDate.now());
+                if (d.getPromocionId() != null)
+                    promo = promoDAO.obtenerActivaPorId(d.getPromocionId(), java.time.LocalDate.now());
                 java.math.BigDecimal t = aplicarPromocionLocal(base, promo);
                 total = total.add(t);
             }
-            if (totalLabel != null) totalLabel.setText("Total estimado: S/ " + total);
-        } catch (Exception ignored) {}
+            if (totalLabel != null)
+                totalLabel.setText("Total estimado: S/ " + total);
+        } catch (Exception ignored) {
+        }
     }
 
-    private java.math.BigDecimal aplicarPromocionLocal(java.math.BigDecimal base, com.playa.alquiler.model.Promocion promo) {
-        if (promo == null) return base;
+    private java.math.BigDecimal aplicarPromocionLocal(java.math.BigDecimal base,
+            com.playa.alquiler.model.Promocion promo) {
+        if (promo == null)
+            return base;
         String tipo = promo.getTipoDescuento();
         Double valor = promo.getValorDescuento();
-        if (tipo == null || valor == null) return base;
+        if (tipo == null || valor == null)
+            return base;
         java.math.BigDecimal result = base;
         if ("Porcentaje".equalsIgnoreCase(tipo)) {
             java.math.BigDecimal descuento = base.multiply(java.math.BigDecimal.valueOf(valor / 100.0));
@@ -314,7 +375,10 @@ public class AlquilerController {
     @FXML
     public void onConsultarAlquileres(ActionEvent event) {
         String estado = estadoFiltroCombo.getValue();
-        if (estado == null || estado.isBlank()) { showError("Seleccione estado"); return; }
+        if (estado == null || estado.isBlank()) {
+            showError("Seleccione estado");
+            return;
+        }
         try {
             java.util.List<Alquiler> lista = new com.playa.alquiler.dao.AlquilerDAO().listarPorEstado(estado);
             alquileresTable.setItems(FXCollections.observableArrayList(lista));
@@ -327,7 +391,10 @@ public class AlquilerController {
     @FXML
     public void onCancelarSeleccionado(ActionEvent event) {
         Alquiler sel = alquileresTable.getSelectionModel().getSelectedItem();
-        if (sel == null) { showError("Seleccione un alquiler"); return; }
+        if (sel == null) {
+            showError("Seleccione un alquiler");
+            return;
+        }
         try {
             try (java.sql.Connection conn = com.playa.alquiler.db.ConexionDB.getConnection()) {
                 new com.playa.alquiler.dao.AlquilerDAO().actualizarEstado(conn, sel.getAlquilerId(), "Cancelado");

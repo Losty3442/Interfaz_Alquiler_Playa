@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Mis Ventas - Alquiler Playa')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <h2 class="mb-4">Historial de Ventas</h2>
+        <a href="/vendor/dashboard" class="btn btn-outline-secondary mb-3"><i class="fa-solid fa-arrow-left"></i>
+            Volver</a>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form th:action="@{/vendor/ventas}" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" class="form-control" name="fecha" th:value="${filtroFecha}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-select" name="estado">
+                            <option value="">Todos</option>
+                            <option value="Reservado" th:selected="${filtroEstado == 'Reservado'}">Reservado</option>
+                            <option value="En curso" th:selected="${filtroEstado == 'En curso'}">En curso</option>
+                            <option value="Pagado" th:selected="${filtroEstado == 'Pagado'}">Pagado</option>
+                            <option value="Sin Pagar" th:selected="${filtroEstado == 'Sin Pagar'}">Sin Pagar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/vendor/ventas" class="btn btn-outline-secondary w-100">Limpiar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th># ID</th>
+                                <th>Fecha / Hora</th>
+                                <th>Cliente</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="v : ${ventas}">
+                                <td class="fw-bold" th:text="'#' + ${v.alquilerId}">#100</td>
+                                <td>
+                                    <span th:text="${v.fecha}">2024-01-01</span>
+                                    <small class="text-muted d-block" th:text="${v.horaInicio}">10:00</small>
+                                </td>
+                                <td th:text="${v.nombreTurista}">Juan Perez</td>
+                                <td>
+                                    <span th:text="${v.estadoAlquiler}"
+                                        th:class="${'badge ' + (v.estadoAlquiler != null && v.estadoAlquiler.contains('Pagado') ? 'bg-success' : (v.estadoAlquiler != null && v.estadoAlquiler.contains('Sin Pagar') ? 'bg-danger' : 'bg-warning text-dark'))}">
+                                        Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a th:href="@{'/vendor/alquiler/' + ${v.alquilerId} + '/confirmacion'}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="fa-solid fa-file-invoice"></i> Ver
+                                        </a>
+
+                                        <!-- Botón Iniciar para Reservas -->
+                                        <form
+                                            th:if="${v.estadoAlquiler != null && v.estadoAlquiler.startsWith('Reservado')}"
+                                            th:action="@{/vendor/alquiler/__${v.alquilerId}__/iniciar}" method="post"
+                                            class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-warning ms-1 text-dark"
+                                                title="Iniciar Alquiler (La hora correrá desde ahora)">
+                                                <i class="fa-solid fa-play"></i> Iniciar
+                                            </button>
+                                        </form>
+
+                                        <form
+                                            th:if="${v.estadoAlquiler != null && v.estadoAlquiler.contains('Sin Pagar')}"
+                                            th:action="@{/vendor/alquiler/__${v.alquilerId}__/pagar}" method="post"
+                                            class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success ms-1"
+                                                title="Marcar como Pagado">
+                                                <i class="fa-solid fa-dollar-sign"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(ventas)}">
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No se encontraron ventas registradas.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+
+</html>
