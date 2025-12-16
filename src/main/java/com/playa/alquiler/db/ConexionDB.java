@@ -1,19 +1,23 @@
 package com.playa.alquiler.db;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import javax.sql.DataSource;
 
 public class ConexionDB {
     private static final String PROPERTIES_PATH = "/application.properties";
-    private static HikariDataSource dataSource;
+    private static DataSource dataSource; // Use interface
+    private static String url;
+    private static String user;
+    private static String password;
+    private static boolean usePool = false;
 
     static {
         try {
+            System.out.println("[ConexionDB] Inicializando...");
             Properties props = new Properties();
             try (InputStream is = ConexionDB.class.getResourceAsStream(PROPERTIES_PATH)) {
                 if (is == null) {
@@ -22,34 +26,75 @@ public class ConexionDB {
                 props.load(is);
             }
 
-            HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(props.getProperty("spring.datasource.url"));
-            config.setUsername(props.getProperty("spring.datasource.username"));
-            config.setPassword(props.getProperty("spring.datasource.password"));
-            config.setDriverClassName("org.postgresql.Driver");
+            url = props.getProperty("spring.datasource.url");
+            user = props.getProperty("spring.datasource.username");
+            password = props.getProperty("spring.datasource.password");
 
-            // Optimizaciones del Pool
-            config.setMaximumPoolSize(10); // Máximo de conexiones simultáneas
-            config.setMinimumIdle(2); // Conexiones mínimas en espera
-            config.setIdleTimeout(30000); // 30 segundos de inactividad antes de cerrar
-            config.setConnectionTimeout(30000); // 30 segundos esperando conexión libre
-            config.setMaxLifetime(1800000); // 30 minutos vida máxima de una conexión
+            // Validar driver de Postgres
+            Class.forName("org.postgresql.Driver");
 
-            dataSource = new HikariDataSource(config);
+            // INTENTO DE CARGAR HIKARI CP
+            try {
+                // Verificar si la clase existe
+                Class.forName("com.zaxxer.hikari.HikariDataSource");
+                System.out.println("[ConexionDB] HikariCP encontrado. Configurando pool...");
+
+                com.zaxxer.hikari.HikariConfig config = new com.zaxxer.hikari.HikariConfig();
+                config.setJdbcUrl(url);
+                config.setUsername(user);
+                config.setPassword(password);
+                config.setDriverClassName("org.postgresql.Driver");
+
+                // Optimizaciones Railway
+                config.setMaximumPoolSize(10);
+                config.setMinimumIdle(2);
+                config.setIdleTimeout(30000);
+                config.setConnectionTimeout(30000);
+                config.setMaxLifetime(1800000);
+
+                dataSource = new com.zaxxer.hikari.HikariDataSource(config);
+                usePool = true;
+                System.out.println("[ConexionDB] Pool de conexiones iniciado correctamente.");
+
+            } catch (Throwable t) {
+                // Captura ClassNotFoundException, NoClassDefFoundError, etc.
+                System.err.println("[ConexionDB] ADVERTENCIA: No se pudo iniciar HikariCP explícitamente.");
+                System.err.println("[ConexionDB] Causa: " + t.toString());
+                System.err.println("[ConexionDB] Se usará DriverManager estándar (más lento pero seguro).");
+                usePool = false;
+            }
 
         } catch (Exception e) {
-            throw new RuntimeException("Error inicializando el Pool de Conexiones a BD: " + e.getMessage(), e);
+            System.err.println("[ConexionDB] ERROR CRITICO DE INICIALIZACION:");
+            e.printStackTrace();
+            // No lanzamos excepcion aquí para permitir intentar conexión y ver error real
+            // en runtime
         }
     }
 
     public static Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        if (usePool && dataSource != null) {
+            try {
+                return dataSource.getConnection();
+            } catch (SQLException e) {
+                System.err
+                        .println("[ConexionDB] Error obteniendo conexión del pool. Reintentando con DriverManager...");
+                // Fallback si el pool falla
+                return DriverManager.getConnection(url, user, password);
+            }
+        }
+        // Fallback or default
+        if (url == null) {
+            throw new SQLException("La URL de conexión es nula. Falló la inicialización de propiedades.");
+        }
+        return DriverManager.getConnection(url, user, password);
     }
 
     public static boolean testConnection() {
         try (Connection conn = getConnection()) {
             return conn != null && !conn.isClosed();
         } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }
