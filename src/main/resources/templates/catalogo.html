@@ -23,13 +23,13 @@
                         <i class="fa-solid fa-tags me-1"></i> Categoría
                     </label>
                     <select name="tipo" class="form-select" id="selectTipo">
-                        <option value="">Todas</option>
-                        <option value="Sombrilla" th:selected="${tipoSeleccionado == 'Sombrilla'}">Sombrillas</option>
-                        <option value="Silla" th:selected="${tipoSeleccionado == 'Silla'}">Sillas</option>
-                        <option value="Set" th:selected="${tipoSeleccionado == 'Set'}">Sets Completos</option>
-                        <option value="Cuatrimoto" th:selected="${tipoSeleccionado == 'Cuatrimoto'}">Cuatrimotos
+                        <option value="">Todas las categorías</option>
+                        <option value="Vehículo" th:selected="${tipoSeleccionado == 'Vehículo'}">Vehículo (Cuatrimoto)
                         </option>
-                        <option value="Kayak" th:selected="${tipoSeleccionado == 'Kayak'}">Kayaks</option>
+                        <option value="Mobiliario" th:selected="${tipoSeleccionado == 'Mobiliario'}">Mobiliario (Silla,
+                            Mesa, Sombrilla)</option>
+                        <option value="Equipo Deportivo" th:selected="${tipoSeleccionado == 'Equipo Deportivo'}">Equipo
+                            Deportivo (Surf, Kayak)</option>
                     </select>
                 </div>
 
