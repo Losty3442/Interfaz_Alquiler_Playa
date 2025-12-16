@@ -21,9 +21,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for Railway/Cloud deployment
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
-                        .requestMatchers("/", "/index", "/catalogo", "/promociones", "/login").permitAll()
+                        .requestMatchers("/", "/index", "/catalogo", "/promociones", "/login", "/error").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/vendor/**").hasRole("VENDEDOR")
                         .anyRequest().authenticated())
@@ -31,11 +32,16 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .successHandler(myAuthenticationSuccessHandler())
+                        .failureUrl("/login?error=true")
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
                         .permitAll())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendRedirect("/login");
+                        }))
                 .userDetailsService(userDetailsService);
 
         return http.build();
