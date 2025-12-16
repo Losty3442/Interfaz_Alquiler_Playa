@@ -433,6 +433,7 @@ a {
         opacity: 0;
         transform: translateY(50px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -493,8 +494,42 @@ a {
         width: auto;
         max-height: 50vh;
     }
-    
+
     .filter-bar-horizontal {
         padding: 1rem;
     }
+}
+
+/* Hours Selector */
+.hours-selector .input-group {
+    max-width: 140px;
+}
+
+.hours-selector .form-control {
+    border-left: none;
+    border-right: none;
+    font-weight: 600;
+}
+
+.hours-selector .btn {
+    border-color: #dee2e6;
+    color: var(--primary-color);
+}
+
+.hours-selector .btn:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* Cart hours buttons */
+.cart-hours-btn {
+    border-radius: 3px !important;
+    line-height: 1;
+}
+
+.cart-hours-btn:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
 }
