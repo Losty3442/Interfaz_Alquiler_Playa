@@ -463,6 +463,7 @@ public class WebAdminController {
     public String nuevoAlquilerAdmin(Model model) {
         try {
             model.addAttribute("recursosDisponibles", recursoDAO.buscarRecursosDisponibles());
+            model.addAttribute("promocionesActivas", promocionDAO.listarActivas());
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -498,6 +499,7 @@ public class WebAdminController {
             @RequestParam String accion,
             @RequestParam(required = false) String horaInicioReserva,
             @RequestParam(required = false) boolean pagadoCheck,
+            @RequestParam(required = false) Integer idPromocion,
             jakarta.servlet.http.HttpServletRequest request,
             RedirectAttributes ra) {
 
@@ -588,6 +590,32 @@ public class WebAdminController {
                     detalleDAO.crear(conn, detalle);
 
                     recursoDAO.decrementarUnidades(conn, recurso.getIdRecurso());
+                }
+
+                // Apply promotion discount if selected
+                if (idPromocion != null && idPromocion > 0) {
+                    try {
+                        com.playa.alquiler.model.Promocion promo = promocionDAO.obtenerActivaPorId(idPromocion,
+                                LocalDate.now());
+                        if (promo != null) {
+                            String tipoDescuento = promo.getTipoDescuento();
+                            Double valorDescuento = promo.getValorDescuento();
+                            if (tipoDescuento != null && valorDescuento != null) {
+                                if ("Porcentaje".equalsIgnoreCase(tipoDescuento)) {
+                                    BigDecimal descuento = totalAlquiler
+                                            .multiply(BigDecimal.valueOf(valorDescuento / 100.0));
+                                    totalAlquiler = totalAlquiler.subtract(descuento);
+                                } else if ("Monto Fijo".equalsIgnoreCase(tipoDescuento)) {
+                                    totalAlquiler = totalAlquiler.subtract(BigDecimal.valueOf(valorDescuento));
+                                }
+                                if (totalAlquiler.compareTo(BigDecimal.ZERO) < 0) {
+                                    totalAlquiler = BigDecimal.ZERO;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Ignore promotion errors, use original total
+                    }
                 }
 
                 conn.commit();

@@ -2,6 +2,7 @@ package com.playa.alquiler.controller;
 
 import com.playa.alquiler.dao.AlquilerDAO;
 import com.playa.alquiler.dao.DetalleAlquilerDAO;
+import com.playa.alquiler.dao.PromocionDAO;
 import com.playa.alquiler.dao.RecursoDAO;
 import com.playa.alquiler.dao.TuristaDAO;
 import com.playa.alquiler.dao.UsuarioDAO;
@@ -35,14 +36,16 @@ public class WebVendorController {
 
     private final AlquilerDAO alquilerDAO;
     private final DetalleAlquilerDAO detalleDAO;
+    private final PromocionDAO promocionDAO;
     private final RecursoDAO recursoDAO;
     private final TuristaDAO turistaDAO;
     private final UsuarioDAO usuarioDAO;
 
-    public WebVendorController(AlquilerDAO alquilerDAO, DetalleAlquilerDAO detalleDAO, RecursoDAO recursoDAO,
-            TuristaDAO turistaDAO, UsuarioDAO usuarioDAO) {
+    public WebVendorController(AlquilerDAO alquilerDAO, DetalleAlquilerDAO detalleDAO, PromocionDAO promocionDAO,
+            RecursoDAO recursoDAO, TuristaDAO turistaDAO, UsuarioDAO usuarioDAO) {
         this.alquilerDAO = alquilerDAO;
         this.detalleDAO = detalleDAO;
+        this.promocionDAO = promocionDAO;
         this.recursoDAO = recursoDAO;
         this.turistaDAO = turistaDAO;
         this.usuarioDAO = usuarioDAO;
@@ -88,6 +91,7 @@ public class WebVendorController {
     public String nuevoAlquiler(Model model) {
         try {
             model.addAttribute("recursosDisponibles", recursoDAO.buscarRecursosDisponibles());
+            model.addAttribute("promocionesActivas", promocionDAO.listarActivas());
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
         }
@@ -138,7 +142,8 @@ public class WebVendorController {
             @RequestParam(required = false) List<Integer> idsRecurso,
             @RequestParam String accion,
             @RequestParam(required = false) String horaInicioReserva,
-            @RequestParam(required = false) boolean pagadoCheck, // true if paid
+            @RequestParam(required = false) boolean pagadoCheck,
+            @RequestParam(required = false) Integer idPromocion,
             jakarta.servlet.http.HttpServletRequest request,
             RedirectAttributes ra) {
 
@@ -257,6 +262,32 @@ public class WebVendorController {
                     // but the DAO filter handles availability.
                     // We can check if units are handled correctly.
                     // For now, simple decrement is enough.
+                }
+
+                // Apply promotion discount if selected
+                if (idPromocion != null && idPromocion > 0) {
+                    try {
+                        com.playa.alquiler.model.Promocion promo = promocionDAO.obtenerActivaPorId(idPromocion,
+                                LocalDate.now());
+                        if (promo != null) {
+                            String tipoDescuento = promo.getTipoDescuento();
+                            Double valorDescuento = promo.getValorDescuento();
+                            if (tipoDescuento != null && valorDescuento != null) {
+                                if ("Porcentaje".equalsIgnoreCase(tipoDescuento)) {
+                                    BigDecimal descuento = totalAlquiler
+                                            .multiply(BigDecimal.valueOf(valorDescuento / 100.0));
+                                    totalAlquiler = totalAlquiler.subtract(descuento);
+                                } else if ("Monto Fijo".equalsIgnoreCase(tipoDescuento)) {
+                                    totalAlquiler = totalAlquiler.subtract(BigDecimal.valueOf(valorDescuento));
+                                }
+                                if (totalAlquiler.compareTo(BigDecimal.ZERO) < 0) {
+                                    totalAlquiler = BigDecimal.ZERO;
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Ignore promotion errors, use original total
+                    }
                 }
 
                 conn.commit();

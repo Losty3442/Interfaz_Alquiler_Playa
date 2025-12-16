@@ -124,8 +124,24 @@
                         </div>
                     </div>
                     <div class="card-footer d-flex flex-column gap-2">
+                        <!-- Promotion Selection -->
+                        <div class="mb-2" th:if="${not #lists.isEmpty(promocionesActivas)}">
+                            <label class="form-label fw-bold text-primary"><i class="fa-solid fa-tags"></i> Aplicar
+                                Promoción</label>
+                            <select class="form-select" name="idPromocion" id="promocionSelect"
+                                onchange="updateTotal()">
+                                <option value="">-- Sin promoción --</option>
+                                <option th:each="p : ${promocionesActivas}" th:value="${p.idPromocion}"
+                                    th:data-tipo="${p.tipoDescuento}" th:data-valor="${p.valorDescuento}"
+                                    th:text="${p.nombrePromocion + ' (' + p.tipoDescuento + ': ' + (p.tipoDescuento == 'Porcentaje' ? p.valorDescuento + '%' : 'S/' + p.valorDescuento) + ')'}">
+                                </option>
+                            </select>
+                        </div>
                         <div class="d-flex justify-content-between align-items-center w-100">
-                            <h4 class="mb-0 text-success fw-bold">Total: <span id="totalPrice">S/ 0.00</span></h4>
+                            <div>
+                                <h4 class="mb-0 text-success fw-bold">Total: <span id="totalPrice">S/ 0.00</span></h4>
+                                <small id="discountInfo" class="text-muted" style="display:none;"></small>
+                            </div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
                             <a href="/admin/historial" class="btn btn-secondary me-md-2">Cancelar</a>
@@ -153,7 +169,7 @@
         }
 
         function updateTotal() {
-            let total = 0;
+            let subtotal = 0;
             const checkboxes = document.querySelectorAll('.resource-check:checked');
             let maxHours = 0;
 
@@ -165,10 +181,43 @@
 
                 if (hours > maxHours) maxHours = hours;
 
-                total += price * hours;
+                subtotal += price * hours;
             });
 
+            // Apply promotion discount
+            let total = subtotal;
+            let discountText = '';
+            const promoSelect = document.getElementById('promocionSelect');
+
+            if (promoSelect && promoSelect.value) {
+                const selectedOption = promoSelect.options[promoSelect.selectedIndex];
+                const tipo = selectedOption.getAttribute('data-tipo');
+                const valor = parseFloat(selectedOption.getAttribute('data-valor')) || 0;
+
+                if (tipo === 'Porcentaje') {
+                    const descuento = subtotal * (valor / 100);
+                    total = subtotal - descuento;
+                    discountText = `Descuento: -S/ ${descuento.toFixed(2)} (${valor}%)`;
+                } else if (tipo === 'Monto Fijo') {
+                    total = subtotal - valor;
+                    discountText = `Descuento: -S/ ${valor.toFixed(2)}`;
+                }
+
+                if (total < 0) total = 0;
+            }
+
             document.getElementById('totalPrice').innerText = 'S/ ' + total.toFixed(2);
+
+            const discountInfo = document.getElementById('discountInfo');
+            if (discountInfo) {
+                if (discountText) {
+                    discountInfo.innerText = discountText;
+                    discountInfo.style.display = 'block';
+                } else {
+                    discountInfo.style.display = 'none';
+                }
+            }
+
             updateTimeRange(maxHours);
         }
 
