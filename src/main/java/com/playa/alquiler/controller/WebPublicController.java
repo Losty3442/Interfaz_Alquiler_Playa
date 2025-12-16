@@ -6,6 +6,7 @@ import com.playa.alquiler.model.Recurso;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -27,15 +28,34 @@ public class WebPublicController {
     }
 
     @GetMapping("/catalogo")
-    public String catalogo(Model model) {
+    public String catalogo(
+            @RequestParam(required = false, defaultValue = "false") boolean showUnavailable,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fecha,
+            Model model) {
         List<Recurso> recursos = List.of();
         try {
-            recursos = recursoDAO.listarTodos();
+            if (showUnavailable) {
+                recursos = recursoDAO.listarTodos();
+            } else {
+                recursos = recursoDAO.buscarRecursosDisponibles();
+            }
+
+            // Filter by type if specified
+            if (tipo != null && !tipo.isEmpty()) {
+                final String tipoFinal = tipo;
+                recursos = recursos.stream()
+                        .filter(r -> tipoFinal.equalsIgnoreCase(r.getTipoDeRecurso()))
+                        .collect(java.util.stream.Collectors.toList());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             model.addAttribute("error", "Error al cargar recursos: " + e.getMessage());
         }
         model.addAttribute("recursos", recursos);
+        model.addAttribute("showUnavailable", showUnavailable);
+        model.addAttribute("tipoSeleccionado", tipo);
+        model.addAttribute("fechaSeleccionada", fecha);
         return "catalogo";
     }
 

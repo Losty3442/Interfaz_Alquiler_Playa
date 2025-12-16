@@ -8,116 +8,295 @@
     <div style="height: 100px;"></div>
 
     <div class="container py-5">
-        <div class="text-center mb-5 fade-in-stagger">
+        <div class="text-center mb-4 fade-in-stagger">
             <h2 class="display-5 fw-bold">Nuestros Recursos</h2>
             <p class="text-muted lead">Encuentra el equipamiento perfecto para tu día de playa.</p>
         </div>
 
-        <div class="row">
-            <!-- Sidebar Filters -->
-            <div class="col-lg-3 mb-5 fade-in-stagger" style="animation-delay: 0.1s">
-                <div class="filter-sidebar">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0">Filtros</h4>
-                        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-                            <i class="fa-solid fa-bars"></i>
-                        </button>
+        <!-- FILTER BAR - TOP -->
+        <div class="filter-bar-horizontal mb-4 fade-in-stagger" style="animation-delay: 0.1s">
+            <form id="filterForm" method="get" action="/catalogo" class="row g-3 align-items-end">
+
+                <!-- Category Filter -->
+                <div class="col-md-3 col-6">
+                    <label class="form-label fw-semibold small text-muted">
+                        <i class="fa-solid fa-tags me-1"></i> Categoría
+                    </label>
+                    <select name="tipo" class="form-select" id="selectTipo">
+                        <option value="">Todas</option>
+                        <option value="Sombrilla" th:selected="${tipoSeleccionado == 'Sombrilla'}">Sombrillas</option>
+                        <option value="Silla" th:selected="${tipoSeleccionado == 'Silla'}">Sillas</option>
+                        <option value="Set" th:selected="${tipoSeleccionado == 'Set'}">Sets Completos</option>
+                        <option value="Cuatrimoto" th:selected="${tipoSeleccionado == 'Cuatrimoto'}">Cuatrimotos
+                        </option>
+                        <option value="Kayak" th:selected="${tipoSeleccionado == 'Kayak'}">Kayaks</option>
+                    </select>
+                </div>
+
+                <!-- Date Filter -->
+                <div class="col-md-3 col-6">
+                    <label class="form-label fw-semibold small text-muted">
+                        <i class="fa-solid fa-calendar me-1"></i> Fecha de Reserva
+                    </label>
+                    <input type="date" name="fecha" class="form-control" id="inputFecha"
+                        th:value="${fechaSeleccionada}" />
+                </div>
+
+                <!-- Show Unavailable Toggle -->
+                <div class="col-md-3 col-6">
+                    <div class="form-check form-switch mt-4">
+                        <input class="form-check-input" type="checkbox" role="switch" id="showUnavailable"
+                            name="showUnavailable" value="true" th:checked="${showUnavailable}">
+                        <label class="form-check-label fw-semibold" for="showUnavailable">
+                            <i class="fa-solid fa-eye-slash me-1"></i> Mostrar no disponibles
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Apply Button -->
+                <div class="col-md-3 col-6">
+                    <button type="submit" class="btn btn-primary-pro w-100">
+                        <i class="fa-solid fa-filter me-2"></i> Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Error Alert -->
+        <div class="alert alert-danger shadow-sm border-0" th:if="${error}" th:text="${error}"></div>
+
+        <!-- Product Grid -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="productGrid">
+            <div class="col fade-in-stagger" th:each="r, iterStat : ${recursos}"
+                th:style="'animation-delay: ' + ${iterStat.index * 0.05} + 's'">
+                <div class="card-pro position-relative"
+                    th:classappend="${r.estado != 'Disponible' ? 'card-unavailable' : ''}" th:data-id="${r.idRecurso}"
+                    th:data-nombre="${r.nombreRecurso}" th:data-tarifa="${r.tarifa}">
+
+                    <!-- Selection Checkbox (only for available) -->
+                    <div class="position-absolute top-0 start-0 m-3 z-3" th:if="${r.estado == 'Disponible'}">
+                        <div class="form-check resource-select-check">
+                            <input class="form-check-input resource-checkbox" type="checkbox"
+                                th:id="'check-' + ${r.idRecurso}" th:data-id="${r.idRecurso}"
+                                th:data-nombre="${r.nombreRecurso}" th:data-tarifa="${r.tarifa}" />
+                        </div>
                     </div>
 
-                    <div class="collapse d-lg-block" id="filterCollapse">
-                        <div class="filter-group">
-                            <span class="filter-title">Categoría</span>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" value="" id="cat1" />
-                                <label class="form-check-label" for="cat1">Sombrillas</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="cat2" />
-                                <label class="form-check-label" for="cat2">Sillas</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="cat3" />
-                                <label class="form-check-label" for="cat3">Sets Completos</label>
-                            </div>
+                    <div class="card-img-wrapper">
+                        <div class="position-absolute top-0 end-0 m-3 z-1">
+                            <span class="badge rounded-pill shadow-sm"
+                                th:classappend="${r.estado == 'Disponible' ? 'bg-success' : 'bg-danger'}"
+                                th:text="${r.estado}">Disponible</span>
                         </div>
+                        <!-- Fallback Logic -->
+                        <img th:if="${r.imagen != null and !r.imagen.isEmpty()}" th:src="${r.imagen}"
+                            class="card-img-top-pro" alt="Recurso" />
+                        <img th:unless="${r.imagen != null and !r.imagen.isEmpty()}" th:src="@{/img/logo.png}"
+                            class="card-img-top-pro p-5 bg-light" alt="Recurso" style="object-fit: contain;" />
 
-                        <div class="filter-group">
-                            <span class="filter-title">Precio / Hora</span>
-                            <input type="range" class="form-range mt-2" min="0" max="100" id="priceRange" />
-                            <div class="d-flex justify-content-between text-muted small">
-                                <span>S/ 0</span>
-                                <span>S/ 100</span>
-                            </div>
+                        <!-- Unavailable Overlay -->
+                        <div class="unavailable-overlay" th:if="${r.estado != 'Disponible'}">
+                            <span><i class="fa-solid fa-ban fa-2x"></i></span>
                         </div>
+                    </div>
 
-                        <div class="filter-group">
-                            <span class="filter-title">Disponibilidad</span>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" checked="checked" />
-                                <label class="form-check-label">Solo disponibles</label>
+                    <div class="card-body-pro d-flex flex-column">
+                        <h5 class="card-title fw-bold mb-2" th:text="${r.nombreRecurso}">Sombrilla</h5>
+                        <p class="card-text text-muted small" th:text="${r.descripcion}">Descripción</p>
+
+                        <div class="mt-auto pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted small">Tarifa por hora</span>
+                                <span class="card-price">S/ <span th:text="${r.tarifa}">0.00</span></span>
                             </div>
-                        </div>
 
-                        <button class="btn btn-primary-pro w-100 mt-3 btn-sm">Aplicar Filtros</button>
+                            <!-- Individual Reserve Button (still available for single reservation) -->
+                            <button type="button" class="btn btn-outline-pro w-100 btn-sm btn-select-single"
+                                th:if="${r.estado == 'Disponible'}" th:data-id="${r.idRecurso}"
+                                th:data-nombre="${r.nombreRecurso}" th:data-tarifa="${r.tarifa}">
+                                <i class="fa-solid fa-cart-plus me-2"></i> Seleccionar
+                            </button>
+                            <button type="button" class="btn btn-secondary w-100 btn-sm" disabled
+                                th:unless="${r.estado == 'Disponible'}">
+                                <i class="fa-solid fa-ban me-2"></i> No Disponible
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Product Grid -->
-            <div class="col-lg-9">
-                <div class="alert alert-danger shadow-sm border-0" th:if="${error}" th:text="${error}"></div>
-
-                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-                    <div class="col fade-in-stagger" th:each="r : ${recursos}">
-                        <div class="card-pro">
-                            <div class="card-img-wrapper">
-                                <div class="position-absolute top-0 end-0 m-3 z-1">
-                                    <span class="badge rounded-pill shadow-sm"
-                                        th:classappend="${r.estado == 'Disponible' ? 'bg-success' : 'bg-danger'}"
-                                        th:text="${r.estado}">Disponible</span>
-                                </div>
-                                <!-- Fallback Logic -->
-                                <img th:if="${r.imagen != null and !r.imagen.isEmpty()}" th:src="${r.imagen}"
-                                    class="card-img-top-pro" alt="Recurso" />
-                                <img th:unless="${r.imagen != null and !r.imagen.isEmpty()}" th:src="@{/img/logo.png}"
-                                    class="card-img-top-pro p-5 bg-light" alt="Recurso" style="object-fit: contain;" />
-                            </div>
-
-                            <div class="card-body-pro d-flex flex-column">
-                                <h5 class="card-title fw-bold mb-2" th:text="${r.nombreRecurso}">Sombrilla</h5>
-                                <p class="card-text text-muted small" th:text="${r.descripcion}">Descripción
-                                </p>
-
-                                <div class="mt-3 pt-3 border-top">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span class="text-muted small">Tarifa por hora</span>
-                                        <span class="card-price">S/ <span th:text="${r.tarifa}">0.00</span></span>
-                                    </div>
-
-                                    <a href="https://wa.me/51999999999" target="_blank"
-                                        class="btn btn-primary-pro w-100 btn-sm">
-                                        <i class="fa-brands fa-whatsapp me-2"></i> Reservar
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-5 py-5" th:if="${recursos.isEmpty()}">
-                    <div class="text-muted opacity-50 mb-3">
-                        <i class="fa-solid fa-umbrella-beach fa-4x"></i>
-                    </div>
-                    <h4 class="text-muted">No encontramos recursos disponibles.</h4>
-                    <p class="text-muted small">Intenta ajustar los filtros de búsqueda.</p>
-                </div>
+        <div class="text-center mt-5 py-5" th:if="${recursos.isEmpty()}">
+            <div class="text-muted opacity-50 mb-3">
+                <i class="fa-solid fa-umbrella-beach fa-4x"></i>
             </div>
+            <h4 class="text-muted">No encontramos recursos disponibles.</h4>
+            <p class="text-muted small">Intenta ajustar los filtros de búsqueda.</p>
+        </div>
+    </div>
+
+    <!-- FLOATING CART -->
+    <div id="floatingCart" class="floating-cart" style="display: none;">
+        <div class="floating-cart-header">
+            <h6 class="mb-0"><i class="fa-solid fa-shopping-cart me-2"></i> Selección</h6>
+            <span class="badge bg-accent" id="cartCount">0</span>
+        </div>
+        <div class="floating-cart-body" id="cartItems">
+            <!-- Dynamically populated -->
+        </div>
+        <div class="floating-cart-footer">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold">Total Estimado:</span>
+                <span class="fw-bold fs-5 text-accent" id="cartTotal">S/ 0.00</span>
+            </div>
+            <button id="btnWhatsApp" class="btn btn-success w-100">
+                <i class="fa-brands fa-whatsapp me-2"></i> Reservar por WhatsApp
+            </button>
+            <button id="btnClearCart" class="btn btn-outline-secondary w-100 mt-2 btn-sm">
+                <i class="fa-solid fa-trash me-2"></i> Limpiar
+            </button>
         </div>
     </div>
 
     <div th:replace="~{fragments/layout :: footer}"></div>
     <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        // Cart Management
+        let cart = [];
+        const whatsappNumber = '51999999999'; // Change to actual number
+
+        function updateCart() {
+            const floatingCart = document.getElementById('floatingCart');
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotal = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                floatingCart.style.display = 'none';
+                return;
+            }
+
+            floatingCart.style.display = 'block';
+            cartCount.textContent = cart.length;
+
+            let total = 0;
+            cartItems.innerHTML = cart.map(item => {
+                total += parseFloat(item.tarifa);
+                return `
+                    <div class="cart-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="small">${item.nombre}</span>
+                        <div class="d-flex align-items-center">
+                            <span class="small text-muted me-2">S/ ${parseFloat(item.tarifa).toFixed(2)}</span>
+                            <button class="btn btn-sm btn-link text-danger p-0" onclick="removeFromCart(${item.id})">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            cartTotal.textContent = `S/ ${total.toFixed(2)}`;
+        }
+
+        function addToCart(id, nombre, tarifa) {
+            if (!cart.find(item => item.id === id)) {
+                cart.push({ id, nombre, tarifa });
+                updateCheckbox(id, true);
+                updateCart();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCheckbox(id, false);
+            updateCart();
+        }
+
+        function updateCheckbox(id, checked) {
+            const checkbox = document.querySelector(`#check-${id}`);
+            if (checkbox) checkbox.checked = checked;
+        }
+
+        function clearCart() {
+            cart.forEach(item => updateCheckbox(item.id, false));
+            cart = [];
+            updateCart();
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.resource-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const id = parseInt(this.dataset.id);
+                const nombre = this.dataset.nombre;
+                const tarifa = this.dataset.tarifa;
+
+                if (this.checked) {
+                    addToCart(id, nombre, tarifa);
+                } else {
+                    removeFromCart(id);
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-select-single').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.dataset.id);
+                const nombre = this.dataset.nombre;
+                const tarifa = this.dataset.tarifa;
+                addToCart(id, nombre, tarifa);
+            });
+        });
+
+        document.getElementById('btnClearCart').addEventListener('click', clearCart);
+
+        document.getElementById('btnWhatsApp').addEventListener('click', function () {
+            if (cart.length === 0) return;
+
+            let message = '🏖️ *Reserva de Recursos - Alquiler Playa*\n\n';
+            message += '¡Hola! Me gustaría reservar los siguientes recursos:\n\n';
+
+            let total = 0;
+            cart.forEach(item => {
+                total += parseFloat(item.tarifa);
+                message += `• ${item.nombre} - S/ ${parseFloat(item.tarifa).toFixed(2)}/hora\n`;
+            });
+
+            const fecha = document.getElementById('inputFecha').value;
+            if (fecha) {
+                message += `\n📅 *Fecha deseada:* ${fecha}\n`;
+            }
+
+            message += `\n💰 *Total estimado:* S/ ${total.toFixed(2)}/hora`;
+            message += '\n\n¡Gracias!';
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+        });
+
+        // Make cards clickable for selection
+        document.querySelectorAll('.card-pro:not(.card-unavailable)').forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function (e) {
+                // Don't trigger if clicking button or checkbox
+                if (e.target.closest('button') || e.target.closest('.form-check')) return;
+
+                const id = parseInt(this.dataset.id);
+                const nombre = this.dataset.nombre;
+                const tarifa = this.dataset.tarifa;
+                const checkbox = this.querySelector('.resource-checkbox');
+
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    if (checkbox.checked) {
+                        addToCart(id, nombre, tarifa);
+                    } else {
+                        removeFromCart(id);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
