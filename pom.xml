@@ -19,7 +19,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
-        <javafx.version>21.0.1</javafx.version>
     </properties>
 
     <dependencies>
@@ -60,22 +59,6 @@
             <version>42.7.2</version>
         </dependency>
 
-        <!-- JavaFX (Marked as provided or optional since we are moving to Web, but kept for compilation of legacy code if needed) -->
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <version>${javafx.version}</version>
-        </dependency>
 
         <!-- PDF export -->
         <dependency>
