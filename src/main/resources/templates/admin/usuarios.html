@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Gestión de Usuarios - Admin')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fa-solid fa-users"></i> Gestión de Usuarios</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="clearForm()">
+                <i class="fa-solid fa-plus"></i> Nuevo Usuario
+            </button>
+        </div>
+
+        <div th:replace="~{fragments/layout :: admin-nav}"></div>
+
+        <div th:if="${param.success}" class="alert alert-success">Operación realizada con éxito.</div>
+        <div th:if="${param.deleted}" class="alert alert-warning">Usuario eliminado.</div>
+        <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">Error.</div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${usuarios}">
+                                <td th:text="${user.usuarioId}">1</td>
+                                <td th:text="${user.nombreUsuario}">admin</td>
+                                <td th:text="${user.email}">admin@mail.com</td>
+                                <td>
+                                    <span class="badge bg-secondary"
+                                        th:text="${rolesMap.get(user.rolId)} ?: 'Desconocido'">Admin</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" th:data-id="${user.usuarioId}"
+                                        th:data-user="${user.nombreUsuario}" th:data-email="${user.email}"
+                                        th:data-role="${user.rolId}" th:data-pass="${user.contrasena}"
+                                        onclick="editUser(this)">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <form th:action="@{/admin/usuarios/eliminar/{id}(id=${user.usuarioId})}"
+                                        method="post" style="display:inline"
+                                        onsubmit="return confirm('¿Seguro que desea eliminar este usuario?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i
+                                                class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/usuarios/guardar}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" id="usuarioId" name="usuarioId" value="0">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre Usuario</label>
+                            <input type="text" class="form-control" id="nombreUsuario" name="nombreUsuario" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="contrasena" name="contrasena" required>
+                            <small class="text-muted">La contraseña se guardará tal cual (idealmente debería
+                                cifrarse).</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" id="rolId" name="rolId" required>
+                                <option th:each="entry : ${rolesMap}" th:value="${entry.key}" th:text="${entry.value}">
+                                    Rol</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function clearForm() {
+            document.getElementById('usuarioId').value = 0;
+            document.getElementById('nombreUsuario').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('contrasena').value = '';
+            document.getElementById('rolId').value = 1;
+        }
+
+        function editUser(btn) {
+            document.getElementById('usuarioId').value = btn.getAttribute('data-id');
+            document.getElementById('nombreUsuario').value = btn.getAttribute('data-user');
+            document.getElementById('email').value = btn.getAttribute('data-email');
+            document.getElementById('contrasena').value = btn.getAttribute('data-pass');
+            document.getElementById('rolId').value = btn.getAttribute('data-role');
+            new bootstrap.Modal(document.getElementById('userModal')).show();
+        }
+    </script>
+</body>
+
+</html>

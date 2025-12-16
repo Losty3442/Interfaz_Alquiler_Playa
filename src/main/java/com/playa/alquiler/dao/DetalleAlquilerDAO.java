@@ -1,9 +1,11 @@
 package com.playa.alquiler.dao;
 
 import com.playa.alquiler.model.DetalleAlquiler;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 
+@Repository
 public class DetalleAlquilerDAO {
     public DetalleAlquiler crear(Connection conn, DetalleAlquiler d) throws SQLException {
         String sql = "INSERT INTO detalle_alquiler (alquiler_id, recurso_id, cantidad_horas, promocion_id, total_a_pagar) VALUES (?,?,?,?,?)";
@@ -11,11 +13,15 @@ public class DetalleAlquilerDAO {
             ps.setInt(1, d.getAlquilerId());
             ps.setInt(2, d.getRecursoId());
             ps.setBigDecimal(3, d.getCantidadHoras());
-            if (d.getPromocionId() == null) ps.setNull(4, Types.INTEGER); else ps.setInt(4, d.getPromocionId());
+            if (d.getPromocionId() == null)
+                ps.setNull(4, Types.INTEGER);
+            else
+                ps.setInt(4, d.getPromocionId());
             ps.setBigDecimal(5, d.getTotalAPagar());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) d.setDetalleId(rs.getInt(1));
+                if (rs.next())
+                    d.setDetalleId(rs.getInt(1));
             }
             return d;
         }
@@ -40,6 +46,12 @@ public class DetalleAlquilerDAO {
                 }
                 return lista;
             }
+        }
+    }
+
+    public java.util.List<DetalleAlquiler> listarPorAlquiler(int alquilerId) throws SQLException {
+        try (Connection conn = com.playa.alquiler.db.ConexionDB.getConnection()) {
+            return listarPorAlquilerId(conn, alquilerId);
         }
     }
 }

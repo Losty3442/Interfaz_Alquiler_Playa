@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Cierre de Caja')}"></head>
+
+<body>
+    <div class="no-print">
+        <nav th:replace="~{fragments/layout :: header}"></nav>
+    </div>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <h2>Cierre de Caja</h2>
+        </div>
+
+        <!-- Admin Nav -->
+        <div class="no-print">
+            <div th:replace="~{fragments/layout :: admin-nav}"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end mb-4 mt-4 no-print gap-2">
+            <form th:action="@{/admin/cierre-caja/cerrar}" method="post"
+                onsubmit="return confirm('¿Está seguro de cerrar la caja? Esto archivará las ventas de los vendedores.');">
+                <input type="hidden" name="fecha" th:value="${fecha}" />
+                <button type="submit" class="btn btn-danger text-white"><i class="fa-solid fa-lock me-2"></i>Cerrar
+                    Caja</button>
+            </form>
+            <button onclick="window.print()" class="btn btn-primary"><i class="fa-solid fa-print"></i> Imprimir</button>
+        </div>
+
+        <div class="card shadow-sm mb-4 no-print">
+            <div class="card-body">
+                <form th:action="@{/admin/cierre-caja}" method="get" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label for="fecha" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" th:value="${fecha}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-info text-white">Consultar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm print-area">
+            <div class="card-header bg-white">
+                <h4 class="mb-0 text-center">Resumen de Ventas por Vendedor</h4>
+                <p class="text-center text-muted mb-0" th:text="'Fecha: ' + ${fecha}">Fecha</p>
+            </div>
+            <div class="card-body">
+                <div th:each="vendedor : ${reporte}" class="mb-5 print-break-inside-avoid">
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 border rounded mb-3">
+                        <h5 class="mb-0 fw-bold text-dark" th:text="'Vendedor: ' + ${vendedor.nombreVendedor}">Vendedor
+                        </h5>
+                        <div class="text-end">
+                            <span class="badge bg-secondary me-2"
+                                th:text="${vendedor.cantidadAlquileres} + ' Alquileres'">0</span>
+                            <span class="fw-bold text-success fs-5" th:text="'Total: S/ ' + ${vendedor.totalVentas}">S/
+                                0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive ms-3">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 15%">Hora</th>
+                                    <th style="width: 10%">ID</th>
+                                    <th style="width: 25%">Cliente</th>
+                                    <th style="width: 35%">Detalles</th>
+                                    <th style="width: 15%" class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="alquiler : ${vendedor.alquileres}">
+                                    <td th:text="${alquiler.hora}">10:00</td>
+                                    <td th:text="'#' + ${alquiler.alquilerId}">#123</td>
+                                    <td th:text="${alquiler.nombreTurista}">Cliente</td>
+                                    <td>
+                                        <ul class="list-unstyled mb-0 small">
+                                            <li th:each="detalle : ${alquiler.detalles}"
+                                                class="border-bottom pb-1 mb-1">
+                                                <div class="d-flex justify-content-between">
+                                                    <span th:text="${detalle.nombreRecurso}">Silla</span>
+                                                    <span>
+                                                        <span th:text="${detalle.cantidadHoras} + 'h'"></span>
+                                                        <span class="text-muted ms-1"
+                                                            th:text="'(S/ ' + ${detalle.montoDetalle} + ')'"></span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </td>
+                                    <td class="text-end fw-bold align-middle" th:text="'S/ ' + ${alquiler.total}">0.00
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(reporte)}" class="text-center py-5 text-muted">
+                    <h4>No hay movimientos registrados para esta fecha.</h4>
+                </div>
+
+                <div class="border-top pt-3 mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="fw-bold">GRAN TOTAL CAJA</h4>
+                        <h3 class="fw-bold text-primary" th:text="'S/ ' + ${granTotal}">S/ 0.00</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white text-muted text-center d-none d-print-block">
+                <small>Generado el <span
+                        th:text="${#temporals.format(#temporals.createNow(), 'dd-MM-yyyy HH:mm')}"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="no-print">
+        <div th:replace="~{fragments/layout :: footer}"></div>
+    </div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .print-area {
+                border: none !important;
+                box-shadow: none !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .card-header,
+            .card-footer {
+                background-color: transparent !important;
+                border-bottom: 1px solid #dee2e6 !important;
+            }
+
+            .badge {
+                border: 1px solid #000;
+                color: #000 !important;
+            }
+
+            body {
+                background-color: white !important;
+                padding-top: 0 !important;
+            }
+
+            nav,
+            footer {
+                display: none !important;
+            }
+
+            /* Ensure the container doesn't constrain the width too much for printing */
+            .container {
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
+    </style>
+</body>
+
+</html>

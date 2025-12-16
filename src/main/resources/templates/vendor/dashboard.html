@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Vendedor Dashboard - Alquiler Playa')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <h2 class="mb-4">Panel del Vendedor</h2>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}">Operación Exitosa</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-12">
+                <div class="card bg-primary text-white">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="card-title">Mi Caja (Hoy)</h5>
+                            <p class="display-4 mb-0 fw-bold" th:text="'S/ ' + ${miCaja}">S/ 0.00</p>
+                        </div>
+                        <i class="fa-solid fa-cash-register fa-4x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body text-center py-5">
+                        <i class="fa-solid fa-umbrella-beach fa-4x text-success mb-3"></i>
+                        <h3>Alquiler / Reserva</h3>
+                        <p class="text-muted">Procesar alquiler inmediato o reserva.</p>
+                        <div class="d-grid gap-2 col-8 mx-auto">
+                            <a href="/vendor/nuevo-alquiler" class="btn btn-success btn-lg">Nuevo Alquiler</a>
+                            <!-- Using same form for now, or specific route if needed -->
+                            <a href="/vendor/nuevo-alquiler" class="btn btn-outline-success">Reservar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm hover-card">
+                    <div class="card-body text-center py-5">
+                        <i class="fa-solid fa-list-check fa-4x text-info mb-3"></i>
+                        <h3>Mis Ventas</h3>
+                        <p class="text-muted">Consulta tu historial de operaciones.</p>
+                        <a href="/vendor/ventas" class="btn btn-outline-info btn-lg mt-2 stretched-link">Ver
+                            Historial</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <style>
+        .hover-card:hover {
+            transform: translateY(-5px);
+            transition: 0.3s;
+        }
+    </style>
+</body>
+
+</html>

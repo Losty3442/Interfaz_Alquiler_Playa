@@ -2,11 +2,13 @@ package com.playa.alquiler.dao;
 
 import com.playa.alquiler.db.ConexionDB;
 import com.playa.alquiler.model.Turista;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class TuristaDAO {
     public Turista crear(Turista t) throws SQLException {
         String sql = "INSERT INTO Turista (nombres, apellidos, email, telefono, nacionalidad) VALUES (?,?,?,?,?)";

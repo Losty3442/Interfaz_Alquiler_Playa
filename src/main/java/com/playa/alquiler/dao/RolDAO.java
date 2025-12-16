@@ -1,9 +1,11 @@
 package com.playa.alquiler.dao;
 
 import com.playa.alquiler.db.ConexionDB;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 
+@Repository
 public class RolDAO {
     public String obtenerNombreRolPorId(Integer rolId) throws SQLException {
         if (rolId == null) return null;

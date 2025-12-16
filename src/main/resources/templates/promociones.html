@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Promociones - Alquiler Playa')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <h2 class="text-center mb-5">Promociones Vigentes</h2>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col" th:each="p : ${promociones}" th:if="${p.estado == 'Activa'}">
+                <div class="card h-100 shadow-sm border-0 border-top border-5 border-warning">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-warning mb-3">
+                            <i class="fa-solid fa-gift"></i>
+                        </div>
+                        <h3 class="card-title fw-bold" th:text="${p.nombrePromocion}">Promoción</h3>
+                        <p class="card-text text-muted" th:text="${p.descripcion}">Descripción de promoción</p>
+
+                        <div class="my-4">
+                            <span class="badge bg-danger fs-5" th:if="${p.tipoDescuento == 'Porcentaje'}"
+                                th:text="'-' + ${p.valorDescuento} + '%'">-10%</span>
+                            <span class="badge bg-danger fs-5" th:if="${p.tipoDescuento == 'Fijo'}"
+                                th:text="'- S/ ' + ${p.valorDescuento}">- S/ 10</span>
+                        </div>
+
+                        <ul class="list-unstyled bg-light p-3 rounded small text-start">
+                            <li class="mb-2"><i class="fa-solid fa-clock text-muted me-2"></i> <strong
+                                    th:text="${p.duracionPromocion}"></strong></li>
+                            <li><i class="fa-solid fa-circle-info text-muted me-2"></i> <span
+                                    th:text="${p.condicionMinima}"></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5" th:if="${promociones.isEmpty()}">
+            <p class="text-muted">No hay promociones activas en este momento.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+
+</html>

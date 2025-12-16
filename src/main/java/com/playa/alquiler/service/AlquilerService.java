@@ -4,13 +4,11 @@ import com.playa.alquiler.dao.AlquilerDAO;
 import com.playa.alquiler.dao.DetalleAlquilerDAO;
 import com.playa.alquiler.dao.PromocionDAO;
 import com.playa.alquiler.dao.RecursoDAO;
-import com.playa.alquiler.dao.TarifaRecursoDAO;
 import com.playa.alquiler.db.ConexionDB;
 import com.playa.alquiler.model.Alquiler;
 import com.playa.alquiler.model.DetalleAlquiler;
 import com.playa.alquiler.model.Promocion;
 import com.playa.alquiler.model.Recurso;
-import com.playa.alquiler.model.TarifaRecurso;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -21,10 +19,12 @@ import java.util.List;
 public class AlquilerService {
 
     private BigDecimal aplicarPromocion(BigDecimal base, Promocion promo) {
-        if (promo == null) return base;
+        if (promo == null)
+            return base;
         String tipo = promo.getTipoDescuento();
         Double valor = promo.getValorDescuento();
-        if (tipo == null || valor == null) return base;
+        if (tipo == null || valor == null)
+            return base;
         BigDecimal result = base;
         if ("Porcentaje".equalsIgnoreCase(tipo)) {
             BigDecimal descuento = base.multiply(BigDecimal.valueOf(valor / 100.0));
@@ -38,7 +38,6 @@ public class AlquilerService {
 
     public Alquiler crearAlquiler(Alquiler alquiler, List<DetalleAlquiler> detalles) throws SQLException {
         RecursoDAO recursoDAO = new RecursoDAO();
-        TarifaRecursoDAO tarifaDAO = new TarifaRecursoDAO();
         PromocionDAO promoDAO = new PromocionDAO();
         AlquilerDAO alquilerDAO = new AlquilerDAO();
         DetalleAlquilerDAO detalleDAO = new DetalleAlquilerDAO();
@@ -64,21 +63,34 @@ public class AlquilerService {
                 for (DetalleAlquiler d : detalles) {
                     // Validar disponibilidad
                     Recurso r = recursoDAO.obtenerPorId(d.getRecursoId());
-                    if (r == null) throw new SQLException("Recurso ID " + d.getRecursoId() + " no existe");
-                    if (r.getEstado() == null || !"Disponible".equalsIgnoreCase(r.getEstado())) {
-                        throw new SQLException("Recurso ID " + d.getRecursoId() + " no está disponible");
+                    if (r == null)
+                        throw new SQLException("Recurso ID " + d.getRecursoId() + " no existe");
+
+                    // Logic Update: Check units implicitly via decrementarUnidades later,
+                    // but we can check status here loosely.
+                    if ("No disponible".equalsIgnoreCase(r.getEstado()) || "Alquilado".equalsIgnoreCase(r.getEstado())
+                            || "En Mantenimiento".equalsIgnoreCase(r.getEstado())) {
+                        // Double check units just in case status is stale?
+                        // Check units > 0
+                        if (r.getUnidades() <= 0) {
+                            throw new SQLException(
+                                    "Recurso ID " + d.getRecursoId() + " no está disponible (Unidades agotadas)");
+                        }
                     }
 
-                    TarifaRecurso tarifa = tarifaDAO.obtenerUltimaTarifa(d.getRecursoId());
-                    if (tarifa == null) throw new SQLException("Sin tarifa para recurso ID " + d.getRecursoId());
+                    // Usar tarifa directa del recurso
+                    BigDecimal precioHora = r.getTarifa();
+                    if (precioHora == null)
+                        precioHora = BigDecimal.ZERO;
 
                     // Calcular total por detalle
-                    BigDecimal base = tarifa.getPrecioPorHora().multiply(d.getCantidadHoras());
+                    BigDecimal base = precioHora.multiply(d.getCantidadHoras());
                     Promocion promo = null;
                     if (d.getPromocionId() != null) {
                         promo = promoDAO.obtenerActivaPorId(d.getPromocionId(), fechaRef);
                         if (promo == null) {
-                            throw new SQLException("Promoción ID " + d.getPromocionId() + " no está activa o no existe");
+                            throw new SQLException(
+                                    "Promoción ID " + d.getPromocionId() + " no está activa o no existe");
                         }
                     }
                     BigDecimal total = aplicarPromocion(base, promo);
@@ -87,8 +99,10 @@ public class AlquilerService {
                     d.setTotalAPagar(total);
                     detalleDAO.crear(conn, d);
 
-                    // Marcar recurso como Alquilado
-                    new RecursoDAO().actualizarEstado(conn, d.getRecursoId(), "Alquilado");
+                    // Decrementar Unidades (Maneja estado automaticamente)
+                    if (!recursoDAO.decrementarUnidades(conn, d.getRecursoId())) {
+                        throw new SQLException("No hay unidades suficientes para el recurso: " + r.getNombreRecurso());
+                    }
                 }
 
                 conn.commit();
@@ -112,9 +126,9 @@ public class AlquilerService {
                 RecursoDAO recursoDAO = new RecursoDAO();
                 AlquilerDAO alquilerDAO = new AlquilerDAO();
 
-                // Volver recursos a Disponible
+                // Volver recursos a Disponible (Incrementar unidades)
                 for (DetalleAlquiler d : detalleDAO.listarPorAlquilerId(conn, alquilerId)) {
-                    recursoDAO.actualizarEstado(conn, d.getRecursoId(), "Disponible");
+                    recursoDAO.incrementarUnidades(conn, d.getRecursoId());
                 }
                 // Marcar alquiler como Finalizado
                 alquilerDAO.actualizarEstado(conn, alquilerId, "Finalizado");

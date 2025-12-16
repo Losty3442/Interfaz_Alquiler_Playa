@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/layout :: head('Recursos - Admin')}"></head>
+
+<body>
+    <nav th:replace="~{fragments/layout :: header}"></nav>
+
+    <div class="container py-5">
+        <div th:replace="~{fragments/layout :: admin-nav}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fa-solid fa-umbrella-beach"></i> Gestión de Recursos</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resourceModal"
+                onclick="clearForm()">
+                <i class="fa-solid fa-plus"></i> Nuevo Recurso
+            </button>
+        </div>
+
+        <div th:if="${param.success}" class="alert alert-success">Operación exitosa.</div>
+        <div th:if="${param.deleted}" class="alert alert-warning">Recurso eliminado.</div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Tipo</th>
+                                <th>Tarifa (S/)</th>
+                                <th>Imagen</th>
+                                <th>Unidades</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${recursos}">
+                                <td th:text="${r.idRecurso}">1</td>
+                                <td th:text="${r.nombreRecurso}">Sombrilla A1</td>
+                                <td th:text="${r.tipoDeRecurso}">Mobiliario</td>
+                                <td th:text="${r.tarifa}">10.00</td>
+                                <td>
+                                    <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 4px;">
+                                        <img th:if="${r.imagen != null and !r.imagen.isEmpty()}" th:src="${r.imagen}"
+                                            alt="recurso" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <span th:unless="${r.imagen != null and !r.imagen.isEmpty()}"
+                                            class="text-muted small">Sin img</span>
+                                    </div>
+                                </td>
+                                <td th:text="${r.unidades}">10</td>
+                                <td>
+                                    <span
+                                        th:class="'badge ' + (${r.estado == 'Disponible'} ? 'bg-success' : 'bg-warning')"
+                                        th:text="${r.estado}">Disponible</span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                        data-bs-toggle="dropdown">
+                                        <i class="fa-solid fa-rotate"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <button type="button" class="dropdown-item" th:data-id="${r.idRecurso}"
+                                                th:data-name="${r.nombreRecurso}" th:data-desc="${r.descripcion}"
+                                                th:data-type="${r.tipoDeRecurso}" th:data-tarifa="${r.tarifa}"
+                                                th:data-imagen="${r.imagen}" th:data-status="${r.estado}"
+                                                th:data-unidades="${r.unidades}" onclick="edit(this)">
+                                                <i class="fa-solid fa-pen"></i> Editar
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
+                                                method="post">
+                                                <input type="hidden" name="estado" value="Disponible">
+                                                <button type="submit"
+                                                    class="dropdown-item text-success">Disponible</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
+                                                method="post">
+                                                <input type="hidden" name="estado" value="En Mantenimiento">
+                                                <button type="submit" class="dropdown-item text-danger">En
+                                                    Mantenimiento</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <!-- Eliminar -->
+                                    <form th:action="@{/admin/recursos/eliminar/{id}(id=${r.idRecurso})}" method="post"
+                                        style="display:inline" onsubmit="return confirm('Confirmar eliminación');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i
+                                                class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="resourceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/recursos/guardar}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Recurso</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="idRecurso" name="idRecurso" value="0">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreRecurso" name="nombreRecurso" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Recurso</label>
+                            <select name="tipoDeRecurso" id="tipoDeRecurso" class="form-select">
+                                <option value="Mobiliario">Mobiliario (Silla, Mesa, Sombrilla)</option>
+                                <option value="Equipo Deportivo">Equipo Deportivo (Surf, Kayak)</option>
+                                <option value="Vehículo">Vehículo (Cuatrimoto)</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tarifa por Hora (S/)</label>
+                            <input type="number" step="0.01" name="tarifa" id="tarifa" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">URL de Imagen</label>
+                            <input type="url" name="imagen" id="imagen" class="form-control"
+                                placeholder="https://example.com/imagen.jpg">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unidades (Stock)</label>
+                            <input type="number" name="unidades" id="unidades" class="form-control" value="1" min="0"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Estado Inicial</label>
+                            <select name="estado" id="estado" class="form-select">
+                                <option value="Disponible">Disponible</option>
+                                <option value="En Mantenimiento">En Mantenimiento</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footer}"></div>
+    <div th:replace="~{fragments/layout :: scripts}"></div>
+
+    <script>
+        function clearForm() {
+            document.getElementById('idRecurso').value = 0;
+            document.getElementById('nombreRecurso').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('tarifa').value = '';
+            document.getElementById('imagen').value = '';
+            document.getElementById('estado').value = 'Disponible';
+            document.getElementById('unidades').value = '1';
+            document.getElementById('tipoDeRecurso').value = 'Mobiliario';
+        }
+        function edit(btn) {
+            document.getElementById('idRecurso').value = btn.getAttribute('data-id');
+            document.getElementById('nombreRecurso').value = btn.getAttribute('data-name');
+            document.getElementById('descripcion').value = btn.getAttribute('data-desc');
+            document.getElementById('tipoDeRecurso').value = btn.getAttribute('data-type');
+            document.getElementById('tarifa').value = btn.getAttribute('data-tarifa');
+            document.getElementById('imagen').value = btn.getAttribute('data-imagen');
+            document.getElementById('estado').value = btn.getAttribute('data-status');
+            document.getElementById('unidades').value = btn.getAttribute('data-unidades');
+            new bootstrap.Modal(document.getElementById('resourceModal')).show();
+        }
+    </script>
+</body>
+
+</html>

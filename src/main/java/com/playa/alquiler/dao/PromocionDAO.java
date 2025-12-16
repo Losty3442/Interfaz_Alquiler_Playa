@@ -2,10 +2,12 @@ package com.playa.alquiler.dao;
 
 import com.playa.alquiler.db.ConexionDB;
 import com.playa.alquiler.model.Promocion;
+import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.time.LocalDate;
 
+@Repository
 public class PromocionDAO {
     public Promocion obtenerActivaPorId(int id, LocalDate fechaReferencia) throws SQLException {
         String sql = "SELECT id_promocion, nombre_promocion, descripcion, tipo_descuento, valor_descuento, " +
@@ -38,7 +40,9 @@ public class PromocionDAO {
 
     public java.util.List<Promocion> listar() throws SQLException {
         String sql = "SELECT id_promocion, nombre_promocion, descripcion, tipo_descuento, valor_descuento, duracion_promocion, condicion_minima, estado, usuario_id FROM Promociones ORDER BY id_promocion";
-        try (Connection conn = ConexionDB.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+        try (Connection conn = ConexionDB.getConnection();
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             java.util.List<Promocion> lista = new java.util.ArrayList<>();
             while (rs.next()) {
                 Promocion p = new Promocion();
@@ -60,17 +64,27 @@ public class PromocionDAO {
 
     public Promocion crear(Promocion p) throws SQLException {
         String sql = "INSERT INTO Promociones (nombre_promocion, descripcion, tipo_descuento, valor_descuento, duracion_promocion, condicion_minima, estado, usuario_id) VALUES (?,?,?,?,?,?,?,?)";
-        try (Connection conn = ConexionDB.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = ConexionDB.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, p.getNombrePromocion());
             ps.setString(2, p.getDescripcion());
             ps.setString(3, p.getTipoDescuento());
-            if (p.getValorDescuento() == null) ps.setNull(4, Types.DOUBLE); else ps.setDouble(4, p.getValorDescuento());
+            if (p.getValorDescuento() == null)
+                ps.setNull(4, Types.DOUBLE);
+            else
+                ps.setDouble(4, p.getValorDescuento());
             ps.setString(5, p.getDuracionPromocion());
             ps.setString(6, p.getCondicionMinima());
             ps.setString(7, p.getEstado());
-            if (p.getUsuarioId() == null) ps.setNull(8, Types.INTEGER); else ps.setInt(8, p.getUsuarioId());
+            if (p.getUsuarioId() == null)
+                ps.setNull(8, Types.INTEGER);
+            else
+                ps.setInt(8, p.getUsuarioId());
             ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) { if (rs.next()) p.setIdPromocion(rs.getInt(1)); }
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next())
+                    p.setIdPromocion(rs.getInt(1));
+            }
             return p;
         }
     }
@@ -85,7 +99,9 @@ public class PromocionDAO {
 
     public java.util.List<Promocion> listarActivas() throws SQLException {
         String sql = "SELECT id_promocion, nombre_promocion, tipo_descuento, valor_descuento, estado FROM Promociones WHERE estado='Activa' ORDER BY nombre_promocion";
-        try (Connection conn = ConexionDB.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+        try (Connection conn = ConexionDB.getConnection();
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             java.util.List<Promocion> lista = new java.util.ArrayList<>();
             while (rs.next()) {
                 Promocion p = new Promocion();
@@ -98,5 +114,9 @@ public class PromocionDAO {
             }
             return lista;
         }
+    }
+
+    public java.util.List<Promocion> listarTodas() throws SQLException {
+        return listar();
     }
 }

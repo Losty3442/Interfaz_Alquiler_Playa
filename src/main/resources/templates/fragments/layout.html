@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Alquiler Playa</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:fragment="header">
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top navbar-pro">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="/">
+                    <img src="/img/logo.png" alt="Logo"> Alquiler Playa
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/catalogo">Catálogo</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/promociones">Promociones</a></li>
+
+                        <li class="nav-item ms-lg-3" sec:authorize="!isAuthenticated()">
+                            <a class="btn btn-primary-pro btn-sm fs-6 py-2 px-4 rounded-pill" href="/login">Acceso
+                                Staff</a>
+                        </li>
+                        <li class="nav-item ms-lg-3" sec:authorize="hasRole('ADMINISTRADOR')">
+                            <a class="btn btn-warning btn-sm rounded-pill fw-bold" href="/admin/dashboard">Admin
+                                Panel</a>
+                        </li>
+                        <li class="nav-item ms-lg-3" sec:authorize="hasRole('VENDEDOR')">
+                            <a class="btn btn-info btn-sm rounded-pill fw-bold text-white"
+                                href="/vendor/dashboard">Vendedor
+                                Panel</a>
+                        </li>
+                        <li class="nav-item ms-lg-3" sec:authorize="isAuthenticated()">
+                            <form th:action="@{/logout}" method="post" style="display:inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">Salir</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Spacer for fixed navbar -->
+        <div style="height: 80px;"></div>
+    </div>
+
+    <div th:fragment="admin-nav" class="mb-5 d-flex gap-2 p-3 bg-white rounded shadow-sm border overflow-auto">
+        <a href="/admin/dashboard" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/dashboard"><i
+                class="fa-solid fa-chart-pie me-2"></i>Dashboard</a>
+        <a href="/admin/usuarios" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/usuarios"><i
+                class="fa-solid fa-users me-2"></i>Usuarios</a>
+        <a href="/admin/recursos" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/recursos"><i
+                class="fa-solid fa-umbrella-beach me-2"></i>Recursos</a>
+        <a href="/admin/historial" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/historial"><i
+                class="fa-solid fa-clock-rotate-left me-2"></i>Historial</a>
+        <a href="/admin/nuevo-alquiler" class="btn btn-success active-check text-nowrap"
+            data-path="/admin/nuevo-alquiler"><i class="fa-solid fa-plus-circle me-2"></i>Nuevo Alquiler</a>
+        <a href="/admin/promociones" class="btn btn-outline-dark active-check text-nowrap"
+            data-path="/admin/promociones"><i class="fa-solid fa-tags me-2"></i>Promociones</a>
+        <a href="/admin/reportes" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/reportes"><i
+                class="fa-solid fa-chart-line me-2"></i>Reportes</a>
+        <a href="/admin/cierre-caja" class="btn btn-info text-white active-check text-nowrap"
+            data-path="/admin/cierre-caja"><i class="fa-solid fa-cash-register me-2"></i>Cierre de Caja</a>
+        <script>
+            // Simple script to highlight active button
+            document.querySelectorAll('.active-check').forEach(a => {
+                if (window.location.pathname.startsWith(a.getAttribute('data-path'))) {
+                    a.classList.remove('btn-outline-dark');
+                    a.classList.add('btn-dark');
+                }
+            });
+        </script>
+    </div>
+
+    <div th:fragment="footer" class="footer-pro">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h4 class="mb-4 text-white">Alquiler Playa</h4>
+                    <p class="text-white-50">Tu mejor opción para disfrutar del verano con comodidad y estilo. Reservas
+                        fáciles y rápidas.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-4 text-white">Enlaces Rápidos</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-white-50 text-decoration-none hover-white">Inicio</a>
+                        </li>
+                        <li class="mb-2"><a href="/catalogo"
+                                class="text-white-50 text-decoration-none hover-white">Catálogo</a></li>
+                        <li class="mb-2"><a href="/promociones"
+                                class="text-white-50 text-decoration-none hover-white">Promociones</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-4 text-white">Contacto</h5>
+                    <p class="text-white-50"><i class="fa-solid fa-phone me-2"></i> +51 999 999 999</p>
+                    <p class="text-white-50"><i class="fa-solid fa-envelope me-2"></i> contacto@alquilerplaya.com</p>
+                    <div class="mt-4">
+                        <a href="#" class="text-white fs-5 me-3"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="text-white fs-5 me-3"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="text-white fs-5"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-top border-secondary mt-5 pt-4 text-center">
+                <p class="mb-0 text-white-50 small">&copy; 2024 Alquiler Playa System. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script th:fragment="scripts"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -4,11 +4,10 @@ import com.playa.alquiler.db.ConexionDB;
 import com.playa.alquiler.dao.UsuarioDAO;
 import com.playa.alquiler.dao.TuristaDAO;
 import com.playa.alquiler.dao.RecursoDAO;
-import com.playa.alquiler.dao.TarifaRecursoDAO;
 import com.playa.alquiler.model.Usuario;
 import com.playa.alquiler.model.Turista;
 import com.playa.alquiler.model.Recurso;
-import com.playa.alquiler.model.TarifaRecurso;
+
 import com.playa.alquiler.model.Alquiler;
 import com.playa.alquiler.model.DetalleAlquiler;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +31,6 @@ public class PagoServiceTest {
         UsuarioDAO usuarioDAO = new UsuarioDAO();
         TuristaDAO turistaDAO = new TuristaDAO();
         RecursoDAO recursoDAO = new RecursoDAO();
-        TarifaRecursoDAO tarifaDAO = new TarifaRecursoDAO();
 
         Usuario u = new Usuario();
         u.setNombreUsuario("tester");
@@ -54,14 +52,8 @@ public class PagoServiceTest {
         r1.setDescripcion("Silla");
         r1.setEstado("Disponible");
         r1.setTipoDeRecurso("Mobiliario");
+        r1.setTarifa(new BigDecimal("5.00"));
         recursoDAO.crear(r1);
-
-        TarifaRecurso tr1 = new TarifaRecurso();
-        tr1.setIdRecurso(r1.getIdRecurso());
-        tr1.setPrecioPorHora(new BigDecimal("5.00"));
-        tr1.setFechaInicio(LocalDate.now());
-        tr1.setFechaFin(null);
-        tarifaDAO.crear(tr1);
 
         Alquiler alquiler = new Alquiler();
         alquiler.setFecha(LocalDate.now());
