@@ -7,102 +7,120 @@
     <nav th:replace="~{fragments/layout :: header}"></nav>
 
     <div class="container py-5">
+        <h2 class="mb-4">Panel de Administración</h2>
+
         <div th:replace="~{fragments/layout :: admin-nav}"></div>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fa-solid fa-umbrella-beach"></i> Gestión de Recursos</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resourceModal"
-                onclick="clearForm()">
-                <i class="fa-solid fa-plus"></i> Nuevo Recurso
-            </button>
-        </div>
+        <!-- Layout con barra lateral -->
+        <div class="row">
+            <!-- Barra lateral de mantenimiento -->
+            <div class="col-md-3">
+                <div th:replace="~{fragments/layout :: maintenance-sidebar}"></div>
+            </div>
 
-        <div th:if="${param.success}" class="alert alert-success">Operación exitosa.</div>
-        <div th:if="${param.deleted}" class="alert alert-warning">Recurso eliminado.</div>
+            <!-- Contenido principal -->
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3><i class="fa-solid fa-umbrella-beach"></i> Gestión de Recursos</h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resourceModal"
+                        onclick="clearForm()">
+                        <i class="fa-solid fa-plus"></i> Nuevo Recurso
+                    </button>
+                </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Tipo</th>
-                                <th>Tarifa (S/)</th>
-                                <th>Imagen</th>
-                                <th>Unidades</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="r : ${recursos}">
-                                <td th:text="${r.idRecurso}">1</td>
-                                <td th:text="${r.nombreRecurso}">Sombrilla A1</td>
-                                <td th:text="${r.tipoDeRecurso}">Mobiliario</td>
-                                <td th:text="${r.tarifa}">10.00</td>
-                                <td>
-                                    <div style="width: 50px; height: 50px; overflow: hidden; border-radius: 4px;">
-                                        <img th:if="${r.imagen != null and !r.imagen.isEmpty()}" th:src="${r.imagen}"
-                                            alt="recurso" style="width: 100%; height: 100%; object-fit: cover;">
-                                        <span th:unless="${r.imagen != null and !r.imagen.isEmpty()}"
-                                            class="text-muted small">Sin img</span>
-                                    </div>
-                                </td>
-                                <td th:text="${r.unidades}">10</td>
-                                <td>
-                                    <span
-                                        th:class="'badge ' + (${r.estado == 'Disponible'} ? 'bg-success' : 'bg-warning')"
-                                        th:text="${r.estado}">Disponible</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <i class="fa-solid fa-rotate"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <button type="button" class="dropdown-item" th:data-id="${r.idRecurso}"
-                                                th:data-name="${r.nombreRecurso}" th:data-desc="${r.descripcion}"
-                                                th:data-type="${r.tipoDeRecurso}" th:data-tarifa="${r.tarifa}"
-                                                th:data-imagen="${r.imagen}" th:data-status="${r.estado}"
-                                                th:data-unidades="${r.unidades}" onclick="edit(this)">
-                                                <i class="fa-solid fa-pen"></i> Editar
+                <div th:if="${param.success}" class="alert alert-success">Operación exitosa.</div>
+                <div th:if="${param.deleted}" class="alert alert-warning">Recurso eliminado.</div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Tarifa (S/)</th>
+                                        <th>Imagen</th>
+                                        <th>Unidades</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="r : ${recursos}">
+                                        <td th:text="${r.idRecurso}">1</td>
+                                        <td th:text="${r.nombreRecurso}">Sombrilla A1</td>
+                                        <td th:text="${r.tipoDeRecurso}">Mobiliario</td>
+                                        <td th:text="${r.tarifa}">10.00</td>
+                                        <td>
+                                            <div
+                                                style="width: 50px; height: 50px; overflow: hidden; border-radius: 4px;">
+                                                <img th:if="${r.imagen != null and !r.imagen.isEmpty()}"
+                                                    th:src="${r.imagen}" alt="recurso"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                                <span th:unless="${r.imagen != null and !r.imagen.isEmpty()}"
+                                                    class="text-muted small">Sin img</span>
+                                            </div>
+                                        </td>
+                                        <td th:text="${r.unidades}">10</td>
+                                        <td>
+                                            <span
+                                                th:class="'badge ' + (${r.estado == 'Disponible'} ? 'bg-success' : 'bg-warning')"
+                                                th:text="${r.estado}">Disponible</span>
+                                        </td>
+                                        <td>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                data-bs-toggle="dropdown">
+                                                <i class="fa-solid fa-rotate"></i>
                                             </button>
-                                        </li>
-                                        <li>
-                                            <hr class="dropdown-divider">
-                                        </li>
-                                        <li>
-                                            <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
-                                                method="post">
-                                                <input type="hidden" name="estado" value="Disponible">
-                                                <button type="submit"
-                                                    class="dropdown-item text-success">Disponible</button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <button type="button" class="dropdown-item"
+                                                        th:data-id="${r.idRecurso}" th:data-name="${r.nombreRecurso}"
+                                                        th:data-desc="${r.descripcion}"
+                                                        th:data-type="${r.tipoDeRecurso}" th:data-tarifa="${r.tarifa}"
+                                                        th:data-imagen="${r.imagen}" th:data-status="${r.estado}"
+                                                        th:data-unidades="${r.unidades}" onclick="edit(this)">
+                                                        <i class="fa-solid fa-pen"></i> Editar
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
+                                                        method="post">
+                                                        <input type="hidden" name="estado" value="Disponible">
+                                                        <button type="submit"
+                                                            class="dropdown-item text-success">Disponible</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
+                                                        method="post">
+                                                        <input type="hidden" name="estado" value="En Mantenimiento">
+                                                        <button type="submit" class="dropdown-item text-danger">En
+                                                            Mantenimiento</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <!-- Eliminar -->
+                                            <form th:action="@{/admin/recursos/eliminar/{id}(id=${r.idRecurso})}"
+                                                method="post" style="display:inline"
+                                                onsubmit="return confirm('Confirmar eliminación');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                                             </form>
-                                        </li>
-                                        <li>
-                                            <form th:action="@{/admin/recursos/estado/{id}(id=${r.idRecurso})}"
-                                                method="post">
-                                                <input type="hidden" name="estado" value="En Mantenimiento">
-                                                <button type="submit" class="dropdown-item text-danger">En
-                                                    Mantenimiento</button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <!-- Eliminar -->
-                                    <form th:action="@{/admin/recursos/eliminar/{id}(id=${r.idRecurso})}" method="post"
-                                        style="display:inline" onsubmit="return confirm('Confirmar eliminación');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i
-                                                class="fa-solid fa-trash"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

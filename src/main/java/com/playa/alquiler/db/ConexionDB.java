@@ -9,70 +9,132 @@ import java.util.Properties;
 
 public class ConexionDB {
     private static final String PROPERTIES_PATH = "/application.properties";
-    private static HikariDataSource dataSource;
+    private static volatile HikariDataSource dataSource;
+    private static volatile boolean initialized = false;
+    private static volatile String lastError = null;
+    private static final Object lock = new Object();
 
-    static {
-        try {
-            System.out.println("[ConexionDB] Inicializando Pool de Conexiones (HikariCP)...");
-            Properties props = new Properties();
-            try (InputStream is = ConexionDB.class.getResourceAsStream(PROPERTIES_PATH)) {
-                if (is == null) {
-                    throw new IllegalStateException("Archivo application.properties no encontrado en resources");
+    // Lazy initialization - solo inicializa cuando se necesita
+    private static void ensureInitialized() {
+        if (!initialized) {
+            synchronized (lock) {
+                if (!initialized) {
+                    try {
+                        initializePool();
+                        initialized = true;
+                        lastError = null;
+                    } catch (Exception e) {
+                        lastError = e.getMessage();
+                        System.err.println("[ConexionDB] Error de inicialización: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
-                props.load(is);
             }
-
-            HikariConfig config = new HikariConfig();
-
-            // Priority: Environment variables > application.properties
-            String dbUrl = System.getenv("DATABASE_URL");
-            String dbUser = System.getenv("DATABASE_USERNAME");
-            String dbPass = System.getenv("DATABASE_PASSWORD");
-
-            config.setJdbcUrl(dbUrl != null ? dbUrl : props.getProperty("spring.datasource.url"));
-            config.setUsername(dbUser != null ? dbUser : props.getProperty("spring.datasource.username"));
-            config.setPassword(dbPass != null ? dbPass : props.getProperty("spring.datasource.password"));
-            config.setDriverClassName(
-                    props.getProperty("spring.datasource.driver-class-name", "org.postgresql.Driver"));
-
-            // Configuración del Pool - optimizada para Railway/Cloud
-            config.setMaximumPoolSize(5); // Máximo 5 conexiones (menor para hosting gratuito)
-            config.setMinimumIdle(1); // Mínimo 1 en espera
-            config.setIdleTimeout(30000); // 30 segundos
-            config.setConnectionTimeout(60000); // 60 segundos para obtener conexión (más tiempo para cloud)
-            config.setLeakDetectionThreshold(2000);
-
-            // Configuración adicional para conexiones remotas
-            config.addDataSourceProperty("socketTimeout", "60");
-            config.addDataSourceProperty("connectTimeout", "60");
-
-            dataSource = new HikariDataSource(config);
-            System.out.println("[ConexionDB] Pool HikariCP inicializado correctamente.");
-
-        } catch (Exception e) {
-            System.err.println("[ConexionDB] ERROR CRITICO AL INICIALIZAR POOL:");
-            e.printStackTrace();
-            throw new RuntimeException("Error inicializando HikariCP: " + e.getMessage(), e);
         }
     }
 
+    private static void initializePool() throws Exception {
+        System.out.println("[ConexionDB] Inicializando Pool de Conexiones (HikariCP)...");
+
+        // Forzar IPv4 antes de cualquier conexión
+        System.setProperty("java.net.preferIPv4Stack", "true");
+
+        Properties props = new Properties();
+        try (InputStream is = ConexionDB.class.getResourceAsStream(PROPERTIES_PATH)) {
+            if (is == null) {
+                throw new IllegalStateException("Archivo application.properties no encontrado en resources");
+            }
+            props.load(is);
+        }
+
+        // Priority: Environment variables > application.properties
+        String dbUrl = System.getenv("DATABASE_URL");
+        String dbUser = System.getenv("DATABASE_USERNAME");
+        String dbPass = System.getenv("DATABASE_PASSWORD");
+
+        String finalUrl = dbUrl != null ? dbUrl : props.getProperty("spring.datasource.url");
+        String finalUser = dbUser != null ? dbUser : props.getProperty("spring.datasource.username");
+        String finalPass = dbPass != null ? dbPass : props.getProperty("spring.datasource.password");
+
+        System.out.println("[ConexionDB] URL: " + finalUrl);
+        System.out.println("[ConexionDB] Usuario: " + finalUser);
+        System.out.println("[ConexionDB] Usando env vars: " + (dbUrl != null ? "SI" : "NO"));
+
+        // Cargar driver PostgreSQL
+        Class.forName("org.postgresql.Driver");
+
+        // Configurar HikariCP optimizado para velocidad
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(finalUrl);
+        config.setUsername(finalUser);
+        config.setPassword(finalPass);
+        config.setDriverClassName("org.postgresql.Driver");
+
+        // Pool optimizado: mantener conexiones listas para uso inmediato
+        config.setMaximumPoolSize(10); // Más conexiones disponibles
+        config.setMinimumIdle(3); // Mantener 3 conexiones listas (evita espera)
+        config.setIdleTimeout(120000); // 2 min antes de cerrar conexiones idle
+        config.setConnectionTimeout(10000); // 10 seg max para obtener conexión
+        config.setValidationTimeout(3000); // 3 seg para validar conexión
+        config.setMaxLifetime(300000); // 5 min vida máxima de conexión
+        config.setInitializationFailTimeout(30000); // 30 seg para inicializar
+
+        // Optimizaciones de PostgreSQL
+        config.addDataSourceProperty("ssl", "true");
+        config.addDataSourceProperty("sslmode", "require");
+        config.addDataSourceProperty("socketTimeout", "30");
+        config.addDataSourceProperty("connectTimeout", "10");
+        config.addDataSourceProperty("prepareThreshold", "5"); // Cache prepared statements
+        config.addDataSourceProperty("preparedStatementCacheQueries", "256");
+        config.addDataSourceProperty("preparedStatementCacheSizeMiB", "5");
+
+        // Pool name para debugging
+        config.setPoolName("AlquilerPlayaPool");
+
+        dataSource = new HikariDataSource(config);
+        System.out.println("[ConexionDB] ✓ Pool HikariCP inicializado correctamente con " +
+                config.getMinimumIdle() + " conexiones idle mínimas.");
+    }
+
     public static Connection getConnection() throws SQLException {
+        ensureInitialized();
+
+        if (dataSource == null) {
+            throw new SQLException("No se pudo inicializar el pool de conexiones. Error: " +
+                    (lastError != null ? lastError : "desconocido"));
+        }
+
         return dataSource.getConnection();
     }
 
+    public static String getLastError() {
+        return lastError;
+    }
+
+    public static boolean isInitialized() {
+        return initialized && dataSource != null;
+    }
+
     public static boolean testConnection() {
-        try (Connection conn = getConnection()) {
-            return conn != null && !conn.isClosed();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        try {
+            ensureInitialized();
+            if (dataSource == null)
+                return false;
+
+            try (Connection conn = dataSource.getConnection()) {
+                return conn != null && !conn.isClosed();
+            }
+        } catch (Exception e) {
+            System.err.println("[ConexionDB] Test fallido: " + e.getMessage());
             return false;
         }
     }
 
-    // Método para apagar el pool al detener la app
     public static void closePool() {
         if (dataSource != null) {
             dataSource.close();
+            dataSource = null;
+            initialized = false;
         }
     }
 }

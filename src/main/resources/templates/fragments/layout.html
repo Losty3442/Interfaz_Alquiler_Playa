@@ -65,26 +65,123 @@
     <div th:fragment="admin-nav" class="mb-5 d-flex gap-2 p-3 bg-white rounded shadow-sm border overflow-auto">
         <a href="/admin/dashboard" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/dashboard"><i
                 class="fa-solid fa-chart-pie me-2"></i>Dashboard</a>
-        <a href="/admin/usuarios" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/usuarios"><i
-                class="fa-solid fa-users me-2"></i>Usuarios</a>
-        <a href="/admin/recursos" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/recursos"><i
-                class="fa-solid fa-umbrella-beach me-2"></i>Recursos</a>
-        <a href="/admin/historial" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/historial"><i
-                class="fa-solid fa-clock-rotate-left me-2"></i>Historial</a>
+
+        <!-- Menú desplegable: Gestionar Mantenimiento de Datos -->
+        <div class="dropdown hover-dropdown">
+            <a href="/admin/usuarios" class="btn btn-outline-dark dropdown-toggle text-nowrap maintenance-dropdown"
+                id="maintenanceDropdown" aria-expanded="false"
+                data-paths="/admin/usuarios,/admin/recursos,/admin/promociones">
+                <i class="fa-solid fa-database me-2"></i>Gestionar Mantenimiento de Datos
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="maintenanceDropdown">
+                <li><a class="dropdown-item" href="/admin/usuarios"><i class="fa-solid fa-users me-2"></i>Usuarios</a>
+                </li>
+                <li><a class="dropdown-item" href="/admin/recursos"><i
+                            class="fa-solid fa-umbrella-beach me-2"></i>Recursos</a></li>
+                <li><a class="dropdown-item" href="/admin/promociones"><i
+                            class="fa-solid fa-tags me-2"></i>Promociones</a></li>
+            </ul>
+        </div>
+        <!-- Menú desplegable: Reportes -->
+        <div class="dropdown hover-dropdown">
+            <a href="/admin/historial" class="btn btn-outline-dark dropdown-toggle text-nowrap reports-dropdown"
+                id="reportsDropdown" aria-expanded="false"
+                data-paths="/admin/historial,/admin/reportes,/admin/cierre-caja">
+                <i class="fa-solid fa-chart-line me-2"></i>Reportes
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                <li><a class="dropdown-item" href="/admin/historial"><i
+                            class="fa-solid fa-clock-rotate-left me-2"></i>Historial</a></li>
+                <li><a class="dropdown-item" href="/admin/reportes"><i
+                            class="fa-solid fa-file-invoice-dollar me-2"></i>Reporte de Ingresos</a></li>
+                <li><a class="dropdown-item" href="/admin/cierre-caja"><i
+                            class="fa-solid fa-cash-register me-2"></i>Cierre de Caja</a></li>
+            </ul>
+        </div>
+
         <a href="/admin/nuevo-alquiler" class="btn btn-success active-check text-nowrap"
             data-path="/admin/nuevo-alquiler"><i class="fa-solid fa-plus-circle me-2"></i>Nuevo Alquiler</a>
-        <a href="/admin/promociones" class="btn btn-outline-dark active-check text-nowrap"
-            data-path="/admin/promociones"><i class="fa-solid fa-tags me-2"></i>Promociones</a>
-        <a href="/admin/reportes" class="btn btn-outline-dark active-check text-nowrap" data-path="/admin/reportes"><i
-                class="fa-solid fa-chart-line me-2"></i>Reportes</a>
-        <a href="/admin/cierre-caja" class="btn btn-info text-white active-check text-nowrap"
-            data-path="/admin/cierre-caja"><i class="fa-solid fa-cash-register me-2"></i>Cierre de Caja</a>
+
+        <style>
+            .hover-dropdown:hover .dropdown-menu {
+                display: block;
+                margin-top: 0;
+            }
+        </style>
         <script>
             // Simple script to highlight active button
             document.querySelectorAll('.active-check').forEach(a => {
                 if (window.location.pathname.startsWith(a.getAttribute('data-path'))) {
                     a.classList.remove('btn-outline-dark');
                     a.classList.add('btn-dark');
+                }
+            });
+            // Highlight dropdowns if on any of their pages
+            document.querySelectorAll('.maintenance-dropdown, .reports-dropdown').forEach(dropdown => {
+                if (dropdown) {
+                    const paths = dropdown.getAttribute('data-paths').split(',');
+                    if (paths.some(p => window.location.pathname.startsWith(p))) {
+                        dropdown.classList.remove('btn-outline-dark');
+                        dropdown.classList.add('btn-dark');
+                    }
+                }
+            });
+        </script>
+    </div>
+
+    <!-- Barra lateral para páginas de mantenimiento de datos -->
+    <div th:fragment="maintenance-sidebar" class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white" style="background-color: #212529 !important;">
+            <h6 class="mb-0" style="color: #ffffff !important;"><i class="fa-solid fa-database me-2"
+                    style="color: #ffffff !important;"></i>Mantenimiento de Datos</h6>
+        </div>
+        <div class="list-group list-group-flush">
+            <a href="/admin/usuarios" class="list-group-item list-group-item-action maintenance-link"
+                data-path="/admin/usuarios">
+                <i class="fa-solid fa-users me-2"></i>Usuarios
+            </a>
+            <a href="/admin/recursos" class="list-group-item list-group-item-action maintenance-link"
+                data-path="/admin/recursos">
+                <i class="fa-solid fa-umbrella-beach me-2"></i>Recursos
+            </a>
+            <a href="/admin/promociones" class="list-group-item list-group-item-action maintenance-link"
+                data-path="/admin/promociones">
+                <i class="fa-solid fa-tags me-2"></i>Promociones
+            </a>
+        </div>
+        <script>
+            document.querySelectorAll('.maintenance-link').forEach(a => {
+                if (window.location.pathname.startsWith(a.getAttribute('data-path'))) {
+                    a.classList.add('active', 'bg-primary', 'text-white');
+                }
+            });
+        </script>
+    </div>
+
+    <!-- Barra lateral para páginas de reportes -->
+    <div th:fragment="reports-sidebar" class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white" style="background-color: #212529 !important;">
+            <h6 class="mb-0" style="color: #ffffff !important;"><i class="fa-solid fa-chart-line me-2"
+                    style="color: #ffffff !important;"></i>Reportes</h6>
+        </div>
+        <div class="list-group list-group-flush">
+            <a href="/admin/historial" class="list-group-item list-group-item-action reports-link"
+                data-path="/admin/historial">
+                <i class="fa-solid fa-clock-rotate-left me-2"></i>Historial
+            </a>
+            <a href="/admin/reportes" class="list-group-item list-group-item-action reports-link"
+                data-path="/admin/reportes">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i>Reporte de Ingresos
+            </a>
+            <a href="/admin/cierre-caja" class="list-group-item list-group-item-action reports-link"
+                data-path="/admin/cierre-caja">
+                <i class="fa-solid fa-cash-register me-2"></i>Cierre de Caja
+            </a>
+        </div>
+        <script>
+            document.querySelectorAll('.reports-link').forEach(a => {
+                if (window.location.pathname.startsWith(a.getAttribute('data-path'))) {
+                    a.classList.add('active', 'bg-primary', 'text-white');
                 }
             });
         </script>

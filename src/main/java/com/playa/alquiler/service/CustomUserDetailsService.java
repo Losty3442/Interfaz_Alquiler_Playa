@@ -25,11 +25,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
-            // Busqueda simple en memoria para evitar modificar DAO ahora mismo
-            Usuario usuario = usuarioDAO.listarTodos().stream()
-                    .filter(u -> u.getNombreUsuario().equals(username))
-                    .findFirst()
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+            // Búsqueda directa por nombre de usuario (optimizado - sin cargar todos los
+            // usuarios)
+            Usuario usuario = usuarioDAO.obtenerPorNombreUsuario(username);
+            if (usuario == null) {
+                throw new UsernameNotFoundException("Usuario no encontrado: " + username);
+            }
 
             String rolNombre = rolDAO.obtenerNombreRolPorId(usuario.getRolId());
             System.out.println(

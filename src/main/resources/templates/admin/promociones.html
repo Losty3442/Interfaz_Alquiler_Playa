@@ -7,55 +7,67 @@
     <nav th:replace="~{fragments/layout :: header}"></nav>
 
     <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fa-solid fa-tags"></i> Gestión de Promociones</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">
-                <i class="fa-solid fa-plus"></i> Nueva Promoción
-            </button>
-        </div>
+        <h2 class="mb-4">Panel de Administración</h2>
 
-        <!-- Admin Navigation Placeholder (Could be better as a fragment) -->
         <div th:replace="~{fragments/layout :: admin-nav}"></div>
 
-        <div th:if="${param.success}" class="alert alert-success">Promoción guardada.</div>
-        <div th:if="${param.deleted}" class="alert alert-warning">Promoción eliminada.</div>
+        <!-- Layout con barra lateral -->
+        <div class="row">
+            <!-- Barra lateral de mantenimiento -->
+            <div class="col-md-3">
+                <div th:replace="~{fragments/layout :: maintenance-sidebar}"></div>
+            </div>
 
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descuento</th>
-                            <th>Tipo</th>
-                            <th>Duración</th>
-                            <th>Condición</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="p : ${promociones}">
-                            <td th:text="${p.nombrePromocion}">Promo</td>
-                            <td th:text="${p.valorDescuento}">10%</td>
-                            <td th:text="${p.tipoDescuento}">Porcentual</td>
-                            <td th:text="${p.duracionPromocion}">30 días</td>
-                            <td th:text="${p.condicionMinima}">Ninguna</td>
-                            <td>
-                                <span class="badge"
-                                    th:classappend="${p.estado == 'Activa' ? 'bg-success' : 'bg-secondary'}"
-                                    th:text="${p.estado}">Activa</span>
-                            </td>
-                            <td>
-                                <form th:action="@{/admin/promociones/eliminar/{id}(id=${p.idPromocion})}" method="post"
-                                    onsubmit="return confirm('Eliminar?');">
-                                    <button class="btn btn-sm btn-outline-danger"><i
-                                            class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Contenido principal -->
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3><i class="fa-solid fa-tags"></i> Gestión de Promociones</h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">
+                        <i class="fa-solid fa-plus"></i> Nueva Promoción
+                    </button>
+                </div>
+
+                <div th:if="${param.success}" class="alert alert-success">Promoción guardada.</div>
+                <div th:if="${param.deleted}" class="alert alert-warning">Promoción eliminada.</div>
+
+                <div class="card shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Descuento</th>
+                                    <th>Tipo</th>
+                                    <th>Duración</th>
+                                    <th>Condición</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${promociones}">
+                                    <td th:text="${p.nombrePromocion}">Promo</td>
+                                    <td th:text="${p.valorDescuento}">10%</td>
+                                    <td th:text="${p.tipoDescuento}">Porcentual</td>
+                                    <td th:text="${p.duracionPromocion}">30 días</td>
+                                    <td th:text="${p.condicionMinima}">Ninguna</td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${p.estado == 'Activa' ? 'bg-success' : 'bg-secondary'}"
+                                            th:text="${p.estado}">Activa</span>
+                                    </td>
+                                    <td>
+                                        <form th:action="@{/admin/promociones/eliminar/{id}(id=${p.idPromocion})}"
+                                            method="post" onsubmit="return confirm('Eliminar?');">
+                                            <button class="btn btn-sm btn-outline-danger"><i
+                                                    class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

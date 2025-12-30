@@ -12,101 +12,118 @@
         <!-- Admin Nav -->
         <div th:replace="~{fragments/layout :: admin-nav}"></div>
 
-        <!-- Filtros -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <form method="get" th:action="@{/admin/historial}" class="row g-3 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label">Vendedor</label>
-                        <select name="vendedorId" class="form-select">
-                            <option value="">-- Todos --</option>
-                            <option th:each="v : ${vendedores}" th:value="${v.usuarioId}" th:text="${v.nombreUsuario}"
-                                th:selected="${v.usuarioId == filtroVendedor}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Estado</label>
-                        <select name="estado" class="form-select">
-                            <option value="">-- Todos --</option>
-                            <option value="En curso" th:selected="${filtroEstado == 'En curso'}">En curso</option>
-                            <option value="Finalizado" th:selected="${filtroEstado == 'Finalizado'}">Finalizado</option>
-                            <option value="Reservado" th:selected="${filtroEstado == 'Reservado'}">Reservado</option>
-                            <option value="Cancelado" th:selected="${filtroEstado == 'Cancelado'}">Cancelado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Fecha</label>
-                        <input type="date" name="fecha" class="form-control" th:value="${filtroFecha}">
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                    </div>
-                </form>
+        <!-- Layout de dos columnas -->
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div th:replace="~{fragments/layout :: reports-sidebar}"></div>
             </div>
-        </div>
 
-        <!-- Tabla -->
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Fecha/Hora</th>
-                                <th>Estado</th>
-                                <th>Cliente</th>
-                                <th>Vendedor</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="a : ${alquileres}">
-                                <td th:text="${a.alquilerId}">#</td>
-                                <td>
-                                    <div th:text="${a.fecha}">2023-01-01</div>
-                                    <small class="text-muted" th:text="${a.horaInicio}">10:00</small>
-                                </td>
-                                <td>
-                                    <span
-                                        th:class="'badge ' + (${a.estadoAlquiler.contains('En curso') ? 'bg-primary' : (a.estadoAlquiler.contains('Finalizado') ? 'bg-success' : (a.estadoAlquiler.contains('Cancelado') ? 'bg-danger' : 'bg-warning'))})"
-                                        th:text="${a.estadoAlquiler}">Estado</span>
-                                </td>
-                                <td th:text="${a.nombreTurista}">Cliente</td>
-                                <td th:text="${a.nombreVendedor}">Vendedor</td>
-                                <td>
-                                    <div class="btn-group">
-                                        <!-- Cancelar (si no finalizado/cancelado) -->
-                                        <form
-                                            th:if="${!a.estadoAlquiler.contains('Finalizado') and !a.estadoAlquiler.contains('Cancelado')}"
-                                            th:action="@{/admin/alquiler/cancelar/{id}(id=${a.alquilerId})}"
-                                            method="post" onsubmit="return confirm('¿Cancelar este alquiler?');"
-                                            style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning"
-                                                title="Cancelar">
-                                                <i class="bi bi-x-circle"></i> Cancelar
-                                            </button>
-                                        </form>
+            <!-- Contenido principal -->
+            <div class="col-md-9">
+                <!-- Filtros -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <form method="get" th:action="@{/admin/historial}" class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Vendedor</label>
+                                <select name="vendedorId" class="form-select">
+                                    <option value="">-- Todos --</option>
+                                    <option th:each="v : ${vendedores}" th:value="${v.usuarioId}"
+                                        th:text="${v.nombreUsuario}" th:selected="${v.usuarioId == filtroVendedor}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                <select name="estado" class="form-select">
+                                    <option value="">-- Todos --</option>
+                                    <option value="En curso" th:selected="${filtroEstado == 'En curso'}">En curso
+                                    </option>
+                                    <option value="Finalizado" th:selected="${filtroEstado == 'Finalizado'}">Finalizado
+                                    </option>
+                                    <option value="Reservado" th:selected="${filtroEstado == 'Reservado'}">Reservado
+                                    </option>
+                                    <option value="Cancelado" th:selected="${filtroEstado == 'Cancelado'}">Cancelado
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" name="fecha" class="form-control" th:value="${filtroFecha}">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
-                                        <!-- Eliminar (siempre disponible para admin) -->
-                                        <form th:action="@{/admin/alquiler/eliminar/{id}(id=${a.alquilerId})}"
-                                            method="post"
-                                            onsubmit="return confirm('¿ELIMINAR PERMANENTEMENTE? Esta acción no se puede deshacer.');"
-                                            style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger ms-1"
-                                                title="Eliminar">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(alquileres)}">
-                                <td colspan="6" class="text-center py-4 text-muted">No se encontraron alquileres con los
-                                    filtros seleccionados.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Tabla -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Fecha/Hora</th>
+                                        <th>Estado</th>
+                                        <th>Cliente</th>
+                                        <th>Vendedor</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="a : ${alquileres}">
+                                        <td th:text="${a.alquilerId}">#</td>
+                                        <td>
+                                            <div th:text="${a.fecha}">2023-01-01</div>
+                                            <small class="text-muted" th:text="${a.horaInicio}">10:00</small>
+                                        </td>
+                                        <td>
+                                            <span
+                                                th:class="'badge ' + (${a.estadoAlquiler.contains('En curso') ? 'bg-primary' : (a.estadoAlquiler.contains('Finalizado') ? 'bg-success' : (a.estadoAlquiler.contains('Cancelado') ? 'bg-danger' : 'bg-warning'))})"
+                                                th:text="${a.estadoAlquiler}">Estado</span>
+                                        </td>
+                                        <td th:text="${a.nombreTurista}">Cliente</td>
+                                        <td th:text="${a.nombreVendedor}">Vendedor</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <!-- Cancelar (si no finalizado/cancelado) -->
+                                                <form
+                                                    th:if="${!a.estadoAlquiler.contains('Finalizado') and !a.estadoAlquiler.contains('Cancelado')}"
+                                                    th:action="@{/admin/alquiler/cancelar/{id}(id=${a.alquilerId})}"
+                                                    method="post" onsubmit="return confirm('¿Cancelar este alquiler?');"
+                                                    style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                        title="Cancelar">
+                                                        <i class="bi bi-x-circle"></i> Cancelar
+                                                    </button>
+                                                </form>
+
+                                                <!-- Eliminar (siempre disponible para admin) -->
+                                                <form th:action="@{/admin/alquiler/eliminar/{id}(id=${a.alquilerId})}"
+                                                    method="post"
+                                                    onsubmit="return confirm('¿ELIMINAR PERMANENTEMENTE? Esta acción no se puede deshacer.');"
+                                                    style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1"
+                                                        title="Eliminar">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(alquileres)}">
+                                        <td colspan="6" class="text-center py-4 text-muted">No se encontraron alquileres
+                                            con los
+                                            filtros seleccionados.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
